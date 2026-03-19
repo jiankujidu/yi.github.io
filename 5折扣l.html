@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全自动生化单样代测 - 5折起测，限时特惠</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* 顶部折扣条 */
+        .discount-banner {
+            background: linear-gradient(90deg, #ff3b30 0%, #ff6b6b 100%);
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            font-weight: 700;
+            font-size: 1.2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+        }
+        
+        .discount-banner strong {
+            font-size: 1.3rem;
+            background-color: white;
+            color: #ff3b30;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin: 0 5px;
+        }
+        
+        /* 头部样式 */
+        header {
+            background: linear-gradient(135deg, #1a6dbb 0%, #0d4d8c 100%);
+            color: white;
+            padding: 30px 0 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .price-highlight {
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #ff3b30;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 1.8rem;
+            margin: 15px 0 25px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .price-highlight .original {
+            font-size: 1.2rem;
+            color: #666;
+            text-decoration: line-through;
+            margin-right: 15px;
+        }
+        
+        .price-highlight .discount {
+            font-size: 2.2rem;
+            margin-left: 5px;
+        }
+        
+        .contact-bar {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 12px 25px;
+            border-radius: 30px;
+        }
+        
+        /* 服务说明区域 */
+        .service-description {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #1a6dbb;
+        }
+        
+        .service-description h2 {
+            color: #1a6dbb;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .feature i {
+            color: #1a6dbb;
+            font-size: 1.5rem;
+            margin-top: 5px;
+        }
+        
+        /* 限时优惠提示 */
+        .limited-offer {
+            background: linear-gradient(135deg, #ff9800 0%, #ffc107 100%);
+            color: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.2);
+        }
+        
+        .limited-offer i {
+            font-size: 3rem;
+            color: #ff3b30;
+        }
+        
+        /* 价格表区域 */
+        .pricing-section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            color: #1a6dbb;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .discount-tag {
+            background-color: #ff3b30;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            border-radius: 8px;
+            border: 1px solid #eaeaea;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1400px;
+        }
+        
+        thead {
+            background-color: #1a6dbb;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        th {
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #eaeaea;
+            transition: background-color 0.2s;
+        }
+        
+        tbody tr:hover {
+            background-color: #f0f7ff;
+        }
+        
+        td {
+            padding: 16px 15px;
+            vertical-align: top;
+        }
+        
+        .price-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .price-original {
+            text-decoration: line-through;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .price-discounted {
+            color: #ff3b30;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .discount-percent {
+            background-color: #ffebee;
+            color: #ff3b30;
+            font-size: 0.85rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+        
+        /* 系列颜色标记 */
+        .series-liver { border-left: 4px solid #4CAF50; }
+        .series-kidney { border-left: 4px solid #2196F3; }
+        .series-diabetes { border-left: 4px solid #FF9800; }
+        .series-lipid { border-left: 4px solid #9C27B0; }
+        .series-anemia { border-left: 4px solid #FF5722; }
+        .series-immune { border-left: 4px solid #E91E63; }
+        .series-electrolyte { border-left: 4px solid #00BCD4; }
+        .series-rheumatism { border-left: 4px solid #795548; }
+        .series-pancreas { border-left: 4px solid #607D8B; }
+        .series-cardiovascular { border-left: 4px solid #F44336; }
+        .series-tumor { border-left: 4px solid #9E9E9E; }
+        .series-coagulation { border-left: 4px solid #3F51B5; }
+        .series-other { border-left: 4px solid #009688; }
+        
+        /* 服务流程 */
+        .process-section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+        
+        .step {
+            text-align: center;
+            padding: 25px 15px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            transition: transform 0.3s;
+        }
+        
+        .step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            background-color: #1a6dbb;
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        /* 联系按钮区域 */
+        .contact-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .contact-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .contact-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(to right, #ff8a00, #ff3b30);
+            color: white;
+            padding: 18px 35px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: 0 6px 15px rgba(255, 59, 48, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .contact-button.wechat {
+            background: linear-gradient(to right, #09bb07, #0d4d8c);
+            box-shadow: 0 6px 15px rgba(9, 187, 7, 0.3);
+        }
+        
+        .contact-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 59, 48, 0.4);
+        }
+        
+        .contact-button.wechat:hover {
+            box-shadow: 0 10px 20px rgba(9, 187, 7, 0.4);
+        }
+        
+        /* 页脚 */
+        footer {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 40px 0 30px;
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .copyright {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #4a5f7a;
+            color: #bdc3c7;
+            font-size: 0.9rem;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .price-highlight {
+                font-size: 1.5rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .contact-bar {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .section-title {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            th, td {
+                padding: 12px 10px;
+            }
+            
+            .limited-offer {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .contact-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .contact-button {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+        
+        /* 系列筛选按钮 */
+        .series-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            background-color: #e9ecef;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background-color: #1a6dbb;
+            color: white;
+        }
+        
+        .filter-btn:hover {
+            background-color: #d0d7e0;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部折扣条 -->
+    <div class="discount-banner">
+        <span class="blink">🔥</span> 限时特惠：全自动生化单样代测，<strong>所有产品5折起</strong>，量大从优！ <span class="blink">🔥</span>
+    </div>
+    
+    <!-- 头部区域 -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>全自动生化单样代测服务</h1>
+                <p class="subtitle">专业检测 · 精准高效 · 快速出结果</p>
+                
+                <div class="price-highlight">
+                    <div>
+                        <span class="original">原价最高¥80/样</span>
+                        <span class="discount">5折起测</span>
+                    </div>
+                    <div style="margin-left: 20px; font-size: 1.2rem;">
+                        <span>最低仅需</span>
+                        <span style="font-weight: 800; color: #ff3b30; font-size: 1.8rem;">¥5/样</span>
+                    </div>
+                </div>
+                
+                <div class="contact-bar">
+                    <div class="contact-item">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>咨询热线: 19959866301</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fab fa-weixin"></i>
+                        <span>微信号: 19959866301</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock"></i>
+                        <span>服务时间: 周一至周日 8:00-20:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- 限时优惠提示 -->
+        <section class="limited-offer">
+            <i class="fas fa-fire-alt"></i>
+            <div>
+                <h3>🔥 限时特惠活动 🔥</h3>
+                <p>即日起至2026年3月31日，所有生化检测项目<strong>全部5折起</strong>！首次下单客户可额外享受<strong>9折优惠</strong>，批量检测价格更优！</p>
+            </div>
+        </section>
+        
+        <!-- 服务说明 -->
+        <section class="service-description">
+            <h2>专业生化检测，5折起测！</h2>
+            <p>我们使用全自动生化分析仪，提供专业、准确、高效的生化检测服务。所有检测项目<strong>原价明确，折扣透明</strong>，让您清晰了解每项检测的成本，享受真实优惠！</p>
+            
+            <div class="features">
+                <div class="feature">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <div>
+                        <h3>快速检测</h3>
+                        <p>全自动检测流程，单样检测最快1小时内完成，批量样品优先处理，保证实验进度。</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-clipboard-check"></i>
+                    <div>
+                        <h3>精准可靠</h3>
+                        <p>采用国际标准方法学，严格质控，结果准确度高，重复性好，数据可信赖。</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-percent"></i>
+                    <div>
+                        <h3>真实折扣</h3>
+                        <p><strong>所有产品明确标价，5折起测</strong>，无隐藏费用，让您清晰了解每项检测成本。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 价格表 -->
+        <section class="pricing-section">
+            <div class="section-title">
+                <h2>全自动生化检测价目表（原价 vs 5折起优惠价）</h2>
+                <div class="discount-tag">
+                    <i class="fas fa-tag"></i>
+                    <span>所有产品5折起</span>
+                </div>
+            </div>
+            
+            <div class="series-filter" id="seriesFilter">
+                <!-- 筛选按钮将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="8%">货号</th>
+                            <th width="10%">系列</th>
+                            <th width="25%">品名</th>
+                            <th width="15%">简称</th>
+                            <th width="15%">方法学</th>
+                            <th width="12%">原价(¥)</th>
+                            <th width="15%">折扣价(¥)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="price-table">
+                        <!-- 表格内容将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <p style="margin-top: 20px; color: #666; font-size: 0.95rem;">
+                <i class="fas fa-info-circle"></i> 注：以上价格均为单样检测价格，批量检测另有优惠。折扣价基于当前促销活动，最终解释权归本实验室所有。
+            </p>
+        </section>
+        
+        <!-- 联系按钮 -->
+        <section class="contact-section">
+            <h2 style="color: #1a6dbb; margin-bottom: 15px;">立即联系，享受5折优惠！</h2>
+            <p style="max-width: 700px; margin: 0 auto 20px;">电话/微信同号：<strong style="font-size: 1.4rem; color: #ff3b30;">19959866301</strong></p>
+            
+            <div class="contact-buttons">
+                <a href="tel:19959866301" class="contact-button">
+                    <i class="fas fa-phone-alt"></i> 立即电话咨询
+                </a>
+                <a href="weixin://" class="contact-button wechat">
+                    <i class="fab fa-weixin"></i> 微信咨询
+                </a>
+            </div>
+        </section>
+        
+        <!-- 服务流程 -->
+        <section class="process-section">
+            <h2>代测服务流程</h2>
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>选择项目</h3>
+                    <p>从价目表中选择检测项目，计算总价</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>在线下单</h3>
+                    <p>通过电话或微信联系客服下单，享受5折优惠</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>寄送样品</h3>
+                    <p>按照要求准备样品，通过冷链物流寄送至实验室</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>获取报告</h3>
+                    <p>检测完成后，发送完整检测报告和原始数据</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <h3 style="font-size: 1.8rem; margin-bottom: 15px;">全自动生化检测实验室</h3>
+                <p style="max-width: 700px; margin: 0 auto 25px;">专业生化检测服务，提供准确、可靠的检测结果，助力科研与临床诊断。</p>
+                
+                <div style="margin-bottom: 25px;">
+                    <h4 style="font-size: 1.2rem; margin-bottom: 10px;">联系我们</h4>
+                    <p style="font-size: 1.1rem;">电话/微信：<strong>19959866301</strong></p>
+                    <p style="font-size: 1.1rem;">服务邮箱：biochem_service@lab.com</p>
+                </div>
+                
+                <div class="copyright">
+                    <p>© 2026 全自动生化检测实验室 版权所有 | 沪ICP备XXXXXX号</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // 生化检测项目数据 - 来自用户提供的Excel数据
+        const testItems = [
+            { code: "YPD999", series: "肝功能", name: "丙氨酸氨基转移酶(ALT)生化全自动试剂盒", shortName: "ALT", method: "丙氨酸底物法", originalPrice: 12 },
+            { code: "YPD1000", series: "肝功能", name: "天门冬氨酸氨基转移酶(AST)生化全自动试剂盒", shortName: "AST", method: "天门冬氨酸底物法", originalPrice: 12 },
+            { code: "YPD1001", series: "肝功能", name: "碱性磷酸酶(ALP)生化全自动试剂盒", shortName: "ALP", method: "NPP底物-AMP缓冲液法", originalPrice: 16 },
+            { code: "YPD1002", series: "肝功能", name: "γ-谷氨酰基转移酶(GGT)生化全自动试剂盒", shortName: "GGT", method: "GCANA底物法", originalPrice: 16 },
+            { code: "YPD1008", series: "肝功能", name: "胆碱酯酶(CHE)生化全自动试剂盒", shortName: "CHE", method: "丁酰硫代胆碱法", originalPrice: 16 },
+            { code: "YPD1066", series: "肝功能", name: "腺苷脱氨酶(ADA)生化全自动试剂盒", shortName: "ADA", method: "过氧化物酶法", originalPrice: 20 },
+            { code: "YPD1067", series: "肝功能", name: "5'-核苷酸酶(5'-NT)生化全自动试剂盒", shortName: "5'-NT", method: "过氧化物酶法", originalPrice: 20 },
+            { code: "YPD1068", series: "肝功能", name: "总胆汁酸(TBA-V)生化全自动试剂盒", shortName: "TBA-V", method: "酶循环法", originalPrice: 20 },
+            { code: "YPD1006", series: "肝功能", name: "总蛋白(TP)生化全自动试剂盒", shortName: "TP", method: "双缩脲法", originalPrice: 10 },
+            { code: "YPD1005", series: "肝功能", name: "白蛋白(ALB)生化全自动试剂盒", shortName: "ALB", method: "溴甲酚绿法", originalPrice: 14 },
+            { code: "YPD1003", series: "肝功能", name: "总胆红素(T-BIL)生化全自动试剂盒", shortName: "T-BIL", method: "亚硝酸盐氧化法", originalPrice: 20 },
+            { code: "YPD1004", series: "肝功能", name: "直接胆红素(D-BIL)生化全自动试剂盒", shortName: "D-BIL", method: "亚硝酸盐氧化法", originalPrice: 20 },
+            { code: "YPD1009", series: "肝功能", name: "前白蛋白(PA)生化全自动试剂盒", shortName: "PA", method: "免疫比浊法", originalPrice: 16 },
+            { code: "YPD1090", series: "肝功能", name: "甘氨酰脯氨酸二肽氨基肽酶(GPDA)生化全自动试剂盒", shortName: "GPDA", method: "甘氨酰脯氨酰对硝基苯胺底物法", originalPrice: 20 },
+            { code: "YPD1091", series: "肝功能", name: "氨(AMM)生化全自动试剂盒", shortName: "AMM", method: "谷氨酸脱氢酶法", originalPrice: 16 },
+            { code: "YPD1092", series: "肝功能", name: "亮氨酰氨基肽酶(LAP)生化全自动试剂盒", shortName: "LAP", method: "L-亮氨酰-P-硝基苯胺底物法", originalPrice: 12 },
+            { code: "YPD1093", series: "肝功能", name: "甘胆酸(CG)生化全自动试剂盒", shortName: "CG", method: "胶乳增强免疫比浊法", originalPrice: 45 },
+            { code: "YPD1094", series: "肝功能", name: "单胺氧化酶(MAO)生化全自动试剂盒", shortName: "MAO", method: "连续监测法", originalPrice: 16 },
+            { code: "YPD1095", series: "肝功能", name: "谷氨酸脱氢酶(GLDH)生化全自动试剂盒", shortName: "GLDH", method: "连续监测法", originalPrice: 30 },
+            { code: "YPD1096", series: "肝功能", name: "谷胱甘肽还原酶(GR)生化全自动试剂盒", shortName: "GR", method: "GSSG底物法", originalPrice: 45 },
+            { code: "YPD1097", series: "肝功能", name: "α-L-岩藻糖苷酶(AFU)生化全自动试剂盒", shortName: "AFU", method: "速率法", originalPrice: 20 },
+            { code: "YPD1012", series: "肾功能", name: "肌酐(CR（酶）)生化全自动试剂盒", shortName: "CR（酶）", method: "肌氨酸氧化酶法", originalPrice: 14 },
+            { code: "YPD1014", series: "肾功能", name: "尿素(Urea)生化全自动试剂盒", shortName: "Urea", method: "脲酶—谷氨酸脱氢酶法", originalPrice: 14 },
+            { code: "YPD1013", series: "肾功能", name: "尿酸(UA)生化全自动试剂盒", shortName: "UA", method: "尿酸酶法", originalPrice: 14 },
+            { code: "YPD1069", series: "肾功能", name: "β2微球蛋白(β2-MG)生化全自动试剂盒", shortName: "β2-MG", method: "胶乳增强免疫比浊法", originalPrice: 24 },
+            { code: "YPD1070", series: "肾功能", name: "β2微球蛋白(β2-MG（高线性）)生化全自动试剂盒", shortName: "β2-MG（高线性）", method: "胶乳增强免疫比浊法", originalPrice: 24 },
+            { code: "YPD1071", series: "肾功能", name: "尿微量白蛋白(MALB)生化全自动试剂盒", shortName: "MALB", method: "免疫比浊法", originalPrice: 20 },
+            { code: "YPD1072", series: "肾功能", name: "胱抑素C(CYS-C)生化全自动试剂盒", shortName: "CYS-C", method: "胶乳增强免疫比浊法", originalPrice: 32 },
+            { code: "YPD1073", series: "肾功能", name: "视黄醇结合蛋白(RBP)生化全自动试剂盒", shortName: "RBP", method: "胶乳增强免疫比浊法", originalPrice: 20 },
+            { code: "YPD1098", series: "肾功能", name: "N-乙酰-β-D-氨基葡萄糖苷酶(NAG（液体）)生化全自动试剂盒", shortName: "NAG（液体）", method: "MPT底物法", originalPrice: 22 },
+            { code: "YPD1099", series: "肾功能", name: "脑脊液与尿总蛋白(CSF/UTP)生化全自动试剂盒", shortName: "CSF/UTP", method: "邻苯三酚红钼法", originalPrice: 12 },
+            { code: "YPD1100", series: "肾功能", name: "α1微球蛋白(α1-MG)生化全自动试剂盒", shortName: "α1-MG", method: "胶乳增强免疫比浊法", originalPrice: 60 },
+            { code: "YPD1101", series: "肾功能", name: "中性粒细胞明胶酶相关脂质运载蛋白(NGAL)生化全自动试剂盒", shortName: "NGAL", method: "胶乳增强免疫比浊法", originalPrice: 80 },
+            { code: "YPD1102", series: "肾功能", name: "尿视黄醇结合蛋白(URBP)生化全自动试剂盒", shortName: "URBP", method: "胶乳增强免疫比浊法", originalPrice: 40 },
+            { code: "YPD1103", series: "肾功能", name: "尿转铁蛋白(UTRF)生化全自动试剂盒", shortName: "UTRF", method: "胶乳增强免疫比浊法", originalPrice: 28 },
+            { code: "YPD1074", series: "糖尿病", name: "果糖胺(GSP（INT）)生化全自动试剂盒", shortName: "GSP（INT）", method: "硝基四氮唑蓝法", originalPrice: 14 },
+            { code: "YPD1075", series: "糖尿病", name: "葡萄糖(GLU-HK)生化全自动试剂盒", shortName: "GLU-HK", method: "己糖激酶法", originalPrice: 16 },
+            { code: "YPD1042", series: "糖尿病", name: "葡萄糖(GLU-OX)生化全自动试剂盒", shortName: "GLU-OX", method: "氧化酶法", originalPrice: 16 },
+            { code: "YPD1041", series: "糖尿病", name: "果糖胺(GSP)生化全自动试剂盒", shortName: "GSP", method: "四氮唑蓝显色法", originalPrice: 14 },
+            { code: "YPD1076", series: "糖尿病", name: "糖化血红蛋白(HbA1C)生化全自动试剂盒", shortName: "HbA1C", method: "胶乳增强免疫比浊法", originalPrice: 40 },
+            { code: "YPD1104", series: "糖尿病", name: "β-羟丁酸(D3-H)生化全自动试剂盒", shortName: "D3-H", method: "β-羟丁酸脱氢酶法", originalPrice: 16 },
+            { code: "YPD1105", series: "糖尿病", name: "糖化白蛋白(GA)生化全自动试剂盒", shortName: "GA", method: "酶法", originalPrice: 40 },
+            { code: "YPD1106", series: "糖尿病", name: "游离脂肪酸(NEFA)生化全自动试剂盒", shortName: "NEFA", method: "ACS-ACOD法", originalPrice: 16 },
+            { code: "YPD1107", series: "糖尿病", name: "1，5-脱水葡糖醇(1,5-AG)生化全自动试剂盒", shortName: "1,5-AG", method: "酶法", originalPrice: 42 },
+            { code: "YPD1021", series: "血脂", name: "总胆固醇(T-CH)生化全自动试剂盒", shortName: "T-CH", method: "CHOD-PAP底物法", originalPrice: 14 },
+            { code: "YPD1023", series: "血脂", name: "高密度脂蛋白胆固醇(HDL-C)生化全自动试剂盒", shortName: "HDL-C", method: "直接法-过氧化氢酶清除法", originalPrice: 16 },
+            { code: "YPD1024", series: "血脂", name: "低密度脂蛋白胆固醇(LDL-C)生化全自动试剂盒", shortName: "LDL-C", method: "直接法-表面活性剂清除法", originalPrice: 16 },
+            { code: "YPD1025", series: "血脂", name: "载脂蛋白A-Ⅰ(ApoA-Ⅰ)生化全自动试剂盒", shortName: "ApoA-Ⅰ", method: "免疫比浊法", originalPrice: 18 },
+            { code: "YPD1026", series: "血脂", name: "载脂蛋白B(ApoB)生化全自动试剂盒", shortName: "ApoB", method: "免疫比浊法", originalPrice: 18 },
+            { code: "YPD1077", series: "血脂", name: "脂蛋白（a）(Lp（a）)生化全自动试剂盒", shortName: "Lp（a）", method: "胶乳增强免疫比浊法", originalPrice: 24 },
+            { code: "YPD1022", series: "血脂", name: "甘油三酯(TG)生化全自动试剂盒", shortName: "TG", method: "GPO-PAP法", originalPrice: 14 },
+            { code: "YPD1108", series: "血脂", name: "载脂蛋白E(APOE)生化全自动试剂盒", shortName: "APOE", method: "免疫比浊法", originalPrice: 30 },
+            { code: "YPD1109", series: "血脂", name: "小而密低密度脂蛋白胆固醇(sdLDL-C)生化全自动试剂盒", shortName: "sdLDL-C", method: "过氧化物酶法", originalPrice: 40 },
+            { code: "YPD1049", series: "贫血", name: "铁(Fe)生化全自动试剂盒", shortName: "Fe", method: "亚铁嗪法", originalPrice: 16 },
+            { code: "YPD1078", series: "贫血", name: "总铁结合力(TIBC)生化全自动试剂盒", shortName: "TIBC", method: "亚铁嗪法", originalPrice: 12 },
+            { code: "YPD1079", series: "贫血", name: "转铁蛋白(TRF)生化全自动试剂盒", shortName: "TRF", method: "免疫比浊法", originalPrice: 18 },
+            { code: "YPD1056", series: "免疫", name: "补体C3(C3)生化全自动试剂盒", shortName: "C3", method: "免疫比浊法", originalPrice: 30.16 },
+            { code: "YPD1057", series: "免疫", name: "补体C4(C4)生化全自动试剂盒", shortName: "C4", method: "免疫比浊法", originalPrice: 30.16 },
+            { code: "YPD1054", series: "免疫", name: "免疫球蛋白IgG(IgG)生化全自动试剂盒", shortName: "IgG", method: "免疫比浊法", originalPrice: 24 },
+            { code: "YPD1053", series: "免疫", name: "免疫球蛋白IgA(IgA)生化全自动试剂盒", shortName: "IgA", method: "免疫比浊法", originalPrice: 24 },
+            { code: "YPD1055", series: "免疫", name: "免疫球蛋白IgM(IgM)生化全自动试剂盒", shortName: "IgM", method: "免疫比浊法", originalPrice: 24 },
+            { code: "YPD1113", series: "免疫", name: "补体C1q(C1q)生化全自动试剂盒", shortName: "C1q", method: "免疫比浊法", originalPrice: 24 },
+            { code: "YPD1114", series: "免疫", name: "免疫球蛋白IgE(IgE)生化全自动试剂盒", shortName: "IgE", method: "胶乳增强免疫比浊法", originalPrice: 44 },
+            { code: "YPD1080", series: "微量元素及电解质", name: "二氧化碳(CO2（405nm波长）)生化全自动试剂盒", shortName: "CO2（405nm波长）", method: "PEPC酶法", originalPrice: 30 },
+            { code: "YPD1045", series: "微量元素及电解质", name: "钙离子(Ca)生化全自动试剂盒", shortName: "Ca", method: "偶氮胂Ⅲ法", originalPrice: 14 },
+            { code: "YPD1047", series: "微量元素及电解质", name: "镁离子(Mg)生化全自动试剂盒", shortName: "Mg", method: "偶氮胂Ⅰ法", originalPrice: 16 },
+            { code: "YPD1046", series: "微量元素及电解质", name: "无机磷(P)生化全自动试剂盒", shortName: "P", method: "磷钼酸盐法", originalPrice: 14 },
+            { code: "YPD1048", series: "微量元素及电解质", name: "二氧化碳(CO2（浓缩）)生化全自动试剂盒", shortName: "CO2（浓缩）", method: "PEPC酶法", originalPrice: 30 },
+            { code: "YPD1081", series: "微量元素及电解质", name: "镁离子(Mg)生化全自动试剂盒", shortName: "Mg", method: "二甲苯胺蓝法", originalPrice: 16 },
+            { code: "YPD1119", series: "微量元素及电解质", name: "铜离子(Cu)生化全自动试剂盒", shortName: "Cu", method: "PAESA显色剂法", originalPrice: 16 },
+            { code: "YPD1120", series: "微量元素及电解质", name: "锌离子(Zn)生化全自动试剂盒", shortName: "Zn", method: "PAPS显色剂法", originalPrice: 16 },
+            { code: "YPD1121", series: "微量元素及电解质", name: "钾(k)生化全自动试剂盒", shortName: "k", method: "丙酮酸激酶法", originalPrice: 24 },
+            { code: "YPD1122", series: "微量元素及电解质", name: "钠(Na)生化全自动试剂盒", shortName: "Na", method: "半乳糖苷酶法", originalPrice: 16 },
+            { code: "YPD1123", series: "微量元素及电解质", name: "氯(Cl)生化全自动试剂盒", shortName: "Cl", method: "硫氰酸汞法", originalPrice: 10 },
+            { code: "YPD1058", series: "风湿", name: "抗链球菌溶血素O(ASO)生化全自动试剂盒", shortName: "ASO", method: "胶乳增强免疫比浊法", originalPrice: 30 },
+            { code: "YPD1082", series: "风湿", name: "C反应蛋白(CRP)生化全自动试剂盒", shortName: "CRP", method: "胶乳增强免疫比浊法", originalPrice: 30 },
+            { code: "YPD1083", series: "风湿", name: "类风湿因子(RF)生化全自动试剂盒", shortName: "RF", method: "胶乳增强免疫比浊法", originalPrice: 30 },
+            { code: "YPD1043", series: "胰腺", name: "α-淀粉酶(α-AMY)生化全自动试剂盒", shortName: "α-AMY", method: "EPS底物法", originalPrice: 23.84 },
+            { code: "YPD1084", series: "胰腺", name: "脂肪酶(LPS)生化全自动试剂盒", shortName: "LPS", method: "甲基试卤灵底物法", originalPrice: 24 },
+            { code: "YPD1124", series: "胰腺", name: "胰淀粉酶(P-AMY)生化全自动试剂盒", shortName: "P-AMY", method: "免疫抑制-EPS底物法", originalPrice: 24 },
+            { code: "YPD1085", series: "心血管", name: "α-羟丁酸脱氢酶(HBDH)生化全自动试剂盒", shortName: "HBDH", method: "α-酮丁酸底物法", originalPrice: 10 },
+            { code: "YPD1086", series: "心血管", name: "血管紧张素转换酶(ACE)生化全自动试剂盒", shortName: "ACE", method: "FAPGG底物法", originalPrice: 44 },
+            { code: "YPD1087", series: "心血管", name: "肌酸激酶(CK)生化全自动试剂盒", shortName: "CK", method: "磷酸肌酸底物法", originalPrice: 13.6 },
+            { code: "YPD1088", series: "心血管", name: "肌酸激酶MB同工酶(CK-MB)生化全自动试剂盒", shortName: "CK-MB", method: "免疫抑制法", originalPrice: 32 },
+            { code: "YPD1089", series: "心血管", name: "乳酸脱氢酶(LDH)生化全自动试剂盒", shortName: "LDH", method: "乳酸底物法", originalPrice: 14 },
+            { code: "YPD1126", series: "心血管", name: "乳酸脱氢酶同工酶1(LDH1)生化全自动试剂盒", shortName: "LDH1", method: "化学抑制法", originalPrice: 20 },
+            { code: "YPD1127", series: "心血管", name: "超敏C反应蛋白(HS-CRP)生化全自动试剂盒", shortName: "HS-CRP", method: "胶乳增强免疫比浊法", originalPrice: 30 },
+            { code: "YPD1128", series: "心血管", name: "肌酸激酶MB同工酶(CK-MB（质量法）)生化全自动试剂盒", shortName: "CK-MB（质量法）", method: "胶乳免疫比浊法", originalPrice: 60 },
+            { code: "YPD1129", series: "心血管", name: "肌红蛋白(MB)生化全自动试剂盒", shortName: "MB", method: "胶乳增强免疫比浊法", originalPrice: 60 },
+            { code: "YPD1130", series: "心血管", name: "同型半胱氨酸(HCY)生化全自动试剂盒", shortName: "HCY", method: "酶循环法", originalPrice: 60 },
+            { code: "YPD1131", series: "心血管", name: "缺血修饰白蛋白(IMA)生化全自动试剂盒", shortName: "IMA", method: "白蛋白-钴结合试验法", originalPrice: 60 },
+            { code: "YPD1132", series: "心血管", name: "天门冬氨酸氨基转移酶线粒体同工酶(mAST)生化全自动试剂盒", shortName: "mAST", method: "免疫抑制法", originalPrice: 30 },
+            { code: "YPD1125", series: "肿瘤", name: "唾液酸(SA)生化全自动试剂盒", shortName: "SA", method: "酶法", originalPrice: 30 },
+            { code: "YPD1115", series: "凝血", name: "D-二聚体(D-Dimer)生化全自动试剂盒", shortName: "D-Dimer", method: "胶乳增强免疫比浊法", originalPrice: 48 },
+            { code: "YPD1116", series: "凝血", name: "纤维蛋白（原）降解产物(FDP)生化全自动试剂盒", shortName: "FDP", method: "胶乳增强免疫比浊法", originalPrice: 60 },
+            { code: "YPD1117", series: "凝血", name: "纤维蛋白原(Fg)生化全自动试剂盒", shortName: "Fg", method: "免疫比浊法", originalPrice: 18 },
+            { code: "YPD1118", series: "凝血", name: "纤维结合蛋白(Fn)生化全自动试剂盒", shortName: "Fn", method: "胶乳增强免疫比浊法", originalPrice: 26 },
+            { code: "YPD1110", series: "其他", name: "乙醇(EthanoL)生化全自动试剂盒", shortName: "EthanoL", method: "紫外酶动力学法", originalPrice: 18 },
+            { code: "YPD1111", series: "其他", name: "超氧化物歧化酶(SOD)生化全自动试剂盒", shortName: "SOD", method: "比色法", originalPrice: 24 },
+            { code: "YPD1112", series: "感染炎症", name: "α1-酸性糖蛋白(AAG)生化全自动试剂盒", shortName: "AAG", method: "免疫比浊法", originalPrice: 48 }
+        ];
+        
+        // 系列映射到CSS类名
+        const seriesClassMap = {
+            "肝功能": "series-liver",
+            "肾功能": "series-kidney",
+            "糖尿病": "series-diabetes",
+            "血脂": "series-lipid",
+            "贫血": "series-anemia",
+            "免疫": "series-immune",
+            "微量元素及电解质": "series-electrolyte",
+            "风湿": "series-rheumatism",
+            "胰腺": "series-pancreas",
+            "心血管": "series-cardiovascular",
+            "肿瘤": "series-tumor",
+            "凝血": "series-coagulation",
+            "感染炎症": "series-other",
+            "其他": "series-other"
+        };
+        
+        // 获取所有系列
+        const seriesList = [...new Set(testItems.map(item => item.series))];
+        
+        // 生成筛选按钮
+        function generateFilterButtons() {
+            const filterContainer = document.getElementById('seriesFilter');
+            
+            // 添加"全部"按钮
+            const allButton = document.createElement('button');
+            allButton.className = 'filter-btn active';
+            allButton.textContent = '全部';
+            allButton.dataset.series = 'all';
+            allButton.addEventListener('click', () => filterTable('all'));
+            filterContainer.appendChild(allButton);
+            
+            // 为每个系列添加按钮
+            seriesList.forEach(series => {
+                const button = document.createElement('button');
+                button.className = 'filter-btn';
+                button.textContent = series;
+                button.dataset.series = series;
+                button.addEventListener('click', () => filterTable(series));
+                filterContainer.appendChild(button);
+            });
+        }
+        
+        // 生成表格行
+        function generateTableRows(filterSeries = 'all') {
+            const tableBody = document.getElementById('price-table');
+            tableBody.innerHTML = '';
+            
+            testItems.forEach(item => {
+                // 如果指定了系列筛选且当前项目不属于该系列，则跳过
+                if (filterSeries !== 'all' && item.series !== filterSeries) {
+                    return;
+                }
+                
+                // 根据系列确定CSS类
+                const seriesClass = seriesClassMap[item.series] || 'series-other';
+                
+                // 计算折扣价（5折）
+                const discount = 0.5;
+                const discountedPrice = (item.originalPrice * discount).toFixed(2);
+                
+                const row = document.createElement('tr');
+                row.className = seriesClass;
+                row.innerHTML = `
+                    <td>${item.code}</td>
+                    <td><strong>${item.series}</strong></td>
+                    <td>${item.name}</td>
+                    <td>${item.shortName}</td>
+                    <td>${item.method}</td>
+                    <td>
+                        <div class="price-cell">
+                            <span class="price-original">¥${item.originalPrice.toFixed(2)}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="price-cell">
+                            <span class="price-discounted">¥${discountedPrice}</span>
+                            <span class="discount-percent">5折</span>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // 筛选表格
+        function filterTable(series) {
+            // 更新按钮状态
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.querySelector(`.filter-btn[data-series="${series}"]`).classList.add('active');
+            
+            // 重新生成表格
+            generateTableRows(series === 'all' ? 'all' : series);
+        }
+        
+        // 页面加载完成后生成表格
+        document.addEventListener('DOMContentLoaded', function() {
+            generateFilterButtons();
+            generateTableRows();
+            
+            // 为折扣标签添加动画效果
+            const discountBadge = document.querySelector('.discount-tag');
+            discountBadge.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.05)';
+                this.style.transition = 'transform 0.3s';
+            });
+            
+            discountBadge.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+            
+            // 添加点击复制电话号码功能
+            const phoneButton = document.querySelector('a[href^="tel:"]');
+            phoneButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                const phoneNumber = '19959866301';
+                navigator.clipboard.writeText(phoneNumber).then(() => {
+                    const originalText = phoneButton.innerHTML;
+                    phoneButton.innerHTML = '<i class="fas fa-check"></i> 已复制到剪贴板';
+                    phoneButton.style.background = 'linear-gradient(to right, #4CAF50, #2E7D32)';
+                    
+                    setTimeout(() => {
+                        phoneButton.innerHTML = originalText;
+                        phoneButton.style.background = 'linear-gradient(to right, #ff8a00, #ff3b30)';
+                    }, 2000);
+                });
+            });
+        });
+        
+        // 添加折扣倒计时效果
+        function updateCountdown() {
+            const targetDate = new Date('2026-03-31T23:59:59').getTime();
+            const now = new Date().getTime();
+            const timeLeft = targetDate - now;
+            
+            if (timeLeft > 0) {
+                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                
+                const countdownElement = document.querySelector('.limited-offer p');
+                if (countdownElement) {
+                    countdownElement.innerHTML = `即日起至2026年3月31日，所有生化检测项目<strong>全部5折</strong>！首次下单客户可额外享受<strong>9折优惠</strong>，批量检测价格更优！<br><strong>限时优惠仅剩${days}天${hours}小时${minutes}分钟！</strong>`;
+                }
+            }
+        }
+        
+        // 每60秒更新一次倒计时
+        setInterval(updateCountdown, 60000);
+        updateCountdown(); // 初始调用
+    </script>
+</body>
+</html>
