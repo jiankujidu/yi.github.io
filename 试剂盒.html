@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能价格解析报价系统 | 完整功能版</title>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #1a6dfc;
+            --primary-light: #e8f0fe;
+            --primary-gradient: linear-gradient(135deg, #1a6dfc 0%, #0d8bff 100%);
+            --secondary: #0abf6b;
+            --warning: #ff9f43;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --gray: #7f8c8d;
+            --light: #f8fafd;
+            --border: #e1e8ed;
+            --radius: 12px;
+            --shadow: 0 4px 20px rgba(26, 111, 252, 0.08);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1.8rem 2rem;
+            border-radius: var(--radius);
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+        }
+        
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 8px 0;
+        }
+        
+        .rule-highlight {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #ffcc00;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .control-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 0.7rem 1.4rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 111, 252, 0.2);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .file-input-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.7rem 1.4rem;
+            background: white;
+            border: 2px dashed var(--primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--primary);
+        }
+        
+        .file-input-label:hover {
+            background: var(--primary-light);
+        }
+        
+        #csvFileInput { display: none; }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.8rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.6;
+        }
+        
+        .data-info {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 6px;
+            padding: 0.8rem 1rem;
+            font-size: 0.9rem;
+            color: var(--dark);
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 25px;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 700px;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1300px;
+        }
+        
+        thead {
+            position: sticky;
+            top: 0;
+            background: #f0f7ff;
+            z-index: 10;
+        }
+        
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark);
+            border-bottom: 2px solid var(--border);
+            font-size: 0.85rem;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(26, 111, 252, 0.02);
+        }
+        
+        .product-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+        
+        .product-code {
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--gray);
+            background: rgba(0,0,0,0.03);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .price-detail {
+            font-size: 0.85rem;
+            color: var(--gray);
+            line-height: 1.3;
+            max-width: 300px;
+        }
+        
+        .price-box {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.8rem;
+            margin-top: 5px;
+            background: var(--light);
+        }
+        
+        .per-sample-price {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+        
+        .per-box-price {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .price-source {
+            font-size: 0.75rem;
+            color: var(--warning);
+            background: rgba(255, 159, 67, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            margin-top: 3px;
+            display: inline-block;
+        }
+        
+        .quantity-input {
+            width: 90px;
+            padding: 0.7rem 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .quantity-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26,111,252,0.1);
+        }
+        
+        .subtotal {
+            font-weight: 700;
+            color: var(--dark);
+            font-size: 1.1rem;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 1.2rem 1.5rem;
+            background: #f0f7ff;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-content {
+            padding: 1.5rem;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-item {
+            background: var(--light);
+            padding: 1.2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .summary-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-value {
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: var(--primary);
+        }
+        
+        .summary-total {
+            grid-column: span 2;
+            font-size: 1.8rem;
+            color: var(--secondary);
+        }
+        
+        .selected-list {
+            max-height: 320px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 20px;
+        }
+        
+        .selected-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .selected-item:last-child {
+            border-bottom: none;
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--gray);
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-top: 30px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .price-info-box {
+            background: rgba(26, 111, 252, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-available {
+            background: rgba(10, 191, 107, 0.1);
+            color: var(--secondary);
+        }
+        
+        .status-unavailable {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><span>💰</span> 智能价格解析报价系统（完整版）</h1>
+            <p>专门识别图片中的价格格式：单位、单样价格、盒价分别计算</p>
+            
+            <div class="rule-highlight">
+                <p><strong>系统已修复，现在可以正常计算！识别以下价格格式：</strong></p>
+                <p>• <code>规格：48样/市场价：1524/终端价格（按样收费）：46 48T/盒 152元</code> → 单样价格: 46元/样，盒价: 152元/盒</p>
+                <p>• <code>规格：96样/目录价：1500/样价：33 96T/盒 1500元</code> → 单样价格: 33元/样，盒价: 1500元/盒</p>
+                <p>• <code>规格：50T/市场价：2172/终端价格（按样收费）：55 50T/24样/盒 2172元</code> → 单样价格: 55元/样，盒价: 2172元/盒</p>
+            </div>
+        </header>
+        
+        <div class="control-bar">
+            <button class="btn btn-primary" id="loadSampleBtn">
+                <span>📊</span> 加载示例数据
+            </button>
+            <label class="file-input-label" for="csvFileInput">
+                <span>📁</span> 上传CSV文件
+            </label>
+            <input type="file" id="csvFileInput" accept=".csv,.xlsx,.xls,.txt">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜索产品名称、货号、分类...">
+            </div>
+            <div class="data-info" id="dataStatus">
+                就绪，可加载示例数据或上传CSV文件
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div>
+                <div class="table-container">
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">产品信息</th>
+                                    <th style="width: 12%;">分类</th>
+                                    <th style="width: 8%;">状态</th>
+                                    <th style="width: 25%;">价格解析</th>
+                                    <th style="width: 10%;">单样数量</th>
+                                    <th style="width: 10%;">盒数</th>
+                                    <th style="width: 10%;">合计金额(¥)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTable">
+                                <!-- 产品行将通过JS动态生成 -->
+                            </tbody>
+                        </table>
+                        <div id="emptyState" class="empty-message" style="display: none;">
+                            <div style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;">📊</div>
+                            <h3>暂无产品数据</h3>
+                            <p>请上传包含价格明细的CSV文件</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="price-info-box">
+                    <h4 style="margin: 0 0 10px 0;">价格解析说明</h4>
+                    <p style="margin: 0; font-size: 0.9rem;">系统自动从"价格明细"字段中识别：</p>
+                    <ul style="margin: 5px 0 0 0; padding-left: 1.2rem; font-size: 0.85rem;">
+                        <li><strong>单样价格</strong>：从"终端价格（按样收费）"或"样价"提取，如46元/样</li>
+                        <li><strong>盒价</strong>：从"48T/盒 152元"格式中提取，如152元/盒</li>
+                        <li><strong>计算方式</strong>：合计金额 = (单样数量 × 单样价格) + (盒数 × 盒价)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <span>🧮</span> 报价计算器
+                    </div>
+                    <div class="card-content">
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <div class="summary-label">产品种类</div>
+                                <div class="summary-value" id="productCount">0</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">单样总数</div>
+                                <div class="summary-value" id="totalSamples">0</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">盒数总数</div>
+                                <div class="summary-value" id="totalBoxes">0</div>
+                            </div>
+                            <div class="summary-item summary-total">
+                                <div class="summary-label">合计金额</div>
+                                <div class="summary-value" id="totalPrice">¥0.00</div>
+                            </div>
+                        </div>
+                        
+                        <div class="selected-list" id="selectedItemsList">
+                            <div class="empty-message">
+                                <p>已选产品将显示在这里</p>
+                                <p style="font-size: 0.85rem; margin-top: 0.5rem;">在表格中输入数量后自动计算</p>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary btn-block" id="calculateBtn">
+                            <span>🧮</span> 重新计算报价
+                        </button>
+                        <button class="btn btn-secondary btn-block" id="exportBtn">
+                            <span>📥</span> 导出Excel报价单
+                        </button>
+                        <button class="btn btn-outline btn-block" id="clearBtn">
+                            <span>🔄</span> 清空所有选择
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span>📋</span> 使用说明
+                    </div>
+                    <div class="card-content">
+                        <div style="font-size: 0.9rem; color: var(--dark); line-height: 1.5;">
+                            <p><strong>1. 上传CSV文件</strong><br>
+                            上传包含16个字段的CSV文件，确保有"价格明细"列</p>
+                            
+                            <p><strong>2. 系统自动解析</strong><br>
+                            系统智能识别单样价格和盒价，分别显示在"价格解析"列</p>
+                            
+                            <p><strong>3. 输入采购数量</strong><br>
+                            在"单样数量"列输入单样采购数，在"盒数"列输入盒装采购数</p>
+                            
+                            <p><strong>4. 计算与导出</strong><br>
+                            系统自动计算总金额，可导出为Excel报价单</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>智能价格解析报价系统 v2.0 | 修复计算功能 | 专门识别单样价格与盒价格式 | 数据安全本地处理</p>
+        </div>
+    </div>
+
+    <script>
+        // 状态管理
+        let allProducts = [];
+        let filteredProducts = [];
+        const selectedItems = new Map();
+
+        // 示例数据 - 基于图片中的实际格式
+        const sampleData = [
+            {
+                "产品货号": "YPSH0916;RXSH0916;LCSSH-0810W48;BYSH-0810W48;G0810W48",
+                "分类": "手动生化",
+                "产品标题": "科研 己糖激酶(HK)试剂盒",
+                "状态": "有货",
+                "价格明细": "规格：48样/市场价：1524/终端价格（按样收费）：46 48T/盒 152元",
+                "定量/定性": "定量",
+                "种属": "通用",
+                "应用": "酶活性检测",
+                "方法学": "微量法",
+                "来源": "重组蛋白",
+                "基因名称": "HK",
+                "其他别称": "Hexokinase",
+                "分子量": "100 kDa",
+                "Tag": "His-Tag",
+                "表达系统": "E.coli",
+                "溶度点": "可溶"
+            },
+            {
+                "产品货号": "YP667;RX169;BY519;LCS109;SH002",
+                "分类": "新版手动生化",
+                "产品标题": "科研 超氧化物歧化酶（SOD）（WST-8法）检测试剂盒（分光光度50T/48S）",
+                "状态": "有货",
+                "价格明细": "规格：96样/目录价：1500/样价：33 96T/盒 1500元",
+                "定量/定性": "定量",
+                "种属": "通用",
+                "应用": "抗氧化能力检测",
+                "方法学": "WST-8法",
+                "来源": "重组蛋白",
+                "基因名称": "SOD",
+                "其他别称": "Superoxide Dismutase",
+                "分子量": "32 kDa",
+                "Tag": "GST-Tag",
+                "表达系统": "E.coli",
+                "溶度点": "可溶"
+            },
+            {
+                "产品货号": "YPD1000;RXDC6667;LCSST8001;BYSH-ZD02",
+                "分类": "全自动生化",
+                "产品标题": "科研 天门冬氨酸氨基转移酶(AST)检测试剂盒",
+                "状态": "有货",
+                "价格明细": "规格：50T/市场价：2172/终端价格（按样收费）：55 50T/24样/盒 2172元",
+                "定量/定性": "定量",
+                "种属": "人/大鼠/小鼠",
+                "应用": "肝功能检测",
+                "方法学": "速率法",
+                "来源": "重组蛋白",
+                "基因名称": "AST",
+                "其他别称": "Aspartate Aminotransferase",
+                "分子量": "45 kDa",
+                "Tag": "His-Tag",
+                "表达系统": "HEK293",
+                "溶度点": "可溶"
+            },
+            {
+                "产品货号": "LCSST8002",
+                "分类": "全自动生化",
+                "产品标题": "科研 乳酸脱氢酶(LDH)检测试剂盒",
+                "状态": "有货",
+                "价格明细": "规格：50管/24样/市场价：2220/终端价格（按样收费）：95 50T/24样/盒 2222元",
+                "定量/定性": "定量",
+                "种属": "人/大鼠/小鼠",
+                "应用": "肝功能检测",
+                "方法学": "速率法",
+                "来源": "重组蛋白",
+                "基因名称": "LDH",
+                "其他别称": "Lactate Dehydrogenase",
+                "分子量": "36 kDa",
+                "Tag": "His-Tag",
+                "表达系统": "HEK293",
+                "溶度点": "可溶"
+            },
+            {
+                "产品货号": "BYSH-ZD03",
+                "分类": "全自动生化",
+                "产品标题": "科研 肌酸激酶(CK)检测试剂盒",
+                "状态": "有货",
+                "价格明细": "规格：50T/24S/市场价：2580/终端价格（按样收费）：108 50T/24样/盒 2580元",
+                "定量/定性": "定量",
+                "种属": "人/大鼠/小鼠",
+                "应用": "心肌损伤检测",
+                "方法学": "速率法",
+                "来源": "重组蛋白",
+                "基因名称": "CK",
+                "其他别称": "Creatine Kinase",
+                "分子量": "43 kDa",
+                "Tag": "His-Tag",
+                "表达系统": "HEK293",
+                "溶度点": "可溶"
+            }
+        ];
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 绑定事件
+            document.getElementById('loadSampleBtn').addEventListener('click', loadSampleData);
+            document.getElementById('csvFileInput').addEventListener('change', handleFileUpload);
+            document.getElementById('searchInput').addEventListener('input', filterProducts);
+            document.getElementById('calculateBtn').addEventListener('click', calculateQuote);
+            document.getElementById('exportBtn').addEventListener('click', exportQuote);
+            document.getElementById('clearBtn').addEventListener('click', clearSelections);
+            
+            updateDataStatus('就绪，可加载示例数据或上传CSV文件');
+        });
+
+        // 加载示例数据
+        function loadSampleData() {
+            processProducts(sampleData);
+            updateDataStatus(`已加载 ${sampleData.length} 个示例产品`);
+        }
+
+        // 处理文件上传
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    let products = [];
+                    const fileName = file.name.toLowerCase();
+                    
+                    if (fileName.endsWith('.csv') || fileName.endsWith('.txt')) {
+                        products = parseCSV(e.target.result);
+                    } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+                        products = parseExcelData(jsonData);
+                    } else {
+                        alert('请上传CSV、TXT或Excel格式的文件');
+                        return;
+                    }
+                    
+                    if (products.length === 0) {
+                        alert('文件中未找到有效的产品数据');
+                        return;
+                    }
+                    
+                    processProducts(products);
+                    updateDataStatus(`已导入 ${products.length} 个产品 (${file.name})`);
+                    
+                } catch (error) {
+                    console.error('解析文件时出错:', error);
+                    alert('文件解析失败: ' + error.message);
+                }
+            };
+            
+            if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
+                reader.readAsArrayBuffer(file);
+            } else {
+                reader.readAsText(file, 'UTF-8');
+            }
+        }
+
+        // 解析CSV
+        function parseCSV(csvText) {
+            const lines = csvText.split(/\r\n|\n/).filter(line => line.trim() !== '');
+            if (lines.length < 2) return [];
+            
+            // 检测分隔符
+            const firstLine = lines[0];
+            const delimiters = [
+                { char: ',', count: firstLine.split(',').length - 1 },
+                { char: '\t', count: firstLine.split('\t').length - 1 },
+                { char: ';', count: firstLine.split(';').length - 1 },
+                { char: '|', count: firstLine.split('|').length - 1 }
+            ];
+            
+            delimiters.sort((a, b) => b.count - a.count);
+            const delimiter = delimiters[0].char;
+            
+            const headers = parseCSVLine(lines[0], delimiter);
+            const products = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i], delimiter);
+                const product = {};
+                
+                headers.forEach((header, index) => {
+                    if (values[index] !== undefined) {
+                        product[header] = values[index].trim();
+                    }
+                });
+                
+                if (product['产品货号'] && product['产品标题']) {
+                    products.push(product);
+                }
+            }
+            
+            return products;
+        }
+
+        // 解析CSV行（处理引号）
+        function parseCSVLine(line, delimiter) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+                
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        current += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === delimiter && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current);
+            return result;
+        }
+
+        // 解析Excel数据
+        function parseExcelData(jsonData) {
+            if (jsonData.length < 2) return [];
+            
+            const headers = jsonData[0];
+            const products = [];
+            
+            for (let i = 1; i < jsonData.length; i++) {
+                const row = jsonData[i];
+                const product = {};
+                
+                headers.forEach((header, index) => {
+                    if (row[index] !== undefined) {
+                        product[header] = String(row[index]).trim();
+                    }
+                });
+                
+                if (product['产品货号'] && product['产品标题']) {
+                    products.push(product);
+                }
+            }
+            
+            return products;
+        }
+
+        // 处理产品数据（核心：智能价格解析）
+        function processProducts(products) {
+            allProducts = products.map((product, index) => {
+                const priceDetail = product['价格明细'] || '';
+                const priceInfo = parsePriceDetail(priceDetail);
+                
+                return {
+                    id: index + 1,
+                    productNo: product['产品货号'] || '',
+                    category: product['分类'] || '',
+                    name: product['产品标题'] || '',
+                    status: product['状态'] || '有货',
+                    priceDetail: priceDetail,
+                    perSamplePrice: priceInfo.perSamplePrice,
+                    perBoxPrice: priceInfo.perBoxPrice,
+                    unitInfo: priceInfo.unitInfo,
+                    samplesPerBox: priceInfo.samplesPerBox,
+                    priceSource: priceInfo.source,
+                    rawData: product
+                };
+            });
+            
+            filteredProducts = [...allProducts];
+            selectedItems.clear();
+            renderProducts();
+            calculateQuote();
+        }
+
+        // 修复后的智能价格解析函数
+        function parsePriceDetail(priceDetail) {
+            let perSamplePrice = 0;
+            let perBoxPrice = 0;
+            let unitInfo = '';
+            let samplesPerBox = 0;
+            let source = '未知';
+            
+            if (!priceDetail) {
+                return { perSamplePrice, perBoxPrice, unitInfo, samplesPerBox, source };
+            }
+            
+            // 1. 解析单样价格 - 从"（按样收费）：XX"格式
+            const samplePattern1 = /（按样收费）\s*[:：]\s*(\d+(?:\.\d+)?)/;
+            const sampleMatch1 = priceDetail.match(samplePattern1);
+            if (sampleMatch1) {
+                perSamplePrice = parseFloat(sampleMatch1[1]);
+                source = '按样收费';
+            } else {
+                // 2. 解析单样价格 - 从"样价：XX"格式
+                const samplePattern2 = /样价\s*[:：]\s*(\d+(?:\.\d+)?)/;
+                const sampleMatch2 = priceDetail.match(samplePattern2);
+                if (sampleMatch2) {
+                    perSamplePrice = parseFloat(sampleMatch2[1]);
+                    source = '样价';
+                } else {
+                    // 3. 尝试从其他格式中提取单样价格
+                    const samplePattern3 = /单样.*?[:：]\s*(\d+(?:\.\d+)?)/;
+                    const sampleMatch3 = priceDetail.match(samplePattern3);
+                    if (sampleMatch3) {
+                        perSamplePrice = parseFloat(sampleMatch3[1]);
+                        source = '单样价格';
+                    }
+                }
+            }
+            
+            // 4. 解析盒价 - 从"XXT/盒 YY元"格式
+            const boxPattern1 = /(\d+[T管])?\/盒\s+(\d+(?:\.\d+)?)元/;
+            const boxMatch1 = priceDetail.match(boxPattern1);
+            if (boxMatch1) {
+                perBoxPrice = parseFloat(boxMatch1[2]);
+                unitInfo = boxMatch1[1] ? boxMatch1[1] + '/盒' : '盒';
+                if (boxMatch1[1]) {
+                    const numMatch = boxMatch1[1].match(/(\d+)/);
+                    if (numMatch) {
+                        samplesPerBox = parseInt(numMatch[1], 10);
+                    }
+                }
+                source = source + ' + 盒价';
+            } else {
+                // 5. 尝试其他盒价格式
+                const boxPattern2 = /(\d+(?:\.\d+)?)\s*元\s*[\/]\s*盒/;
+                const boxMatch2 = priceDetail.match(boxPattern2);
+                if (boxMatch2) {
+                    perBoxPrice = parseFloat(boxMatch2[1]);
+                    source = source + ' + 盒价';
+                }
+            }
+            
+            return { perSamplePrice, perBoxPrice, unitInfo, samplesPerBox, source };
+        }
+
+        // 渲染产品表格
+        function renderProducts() {
+            const tableBody = document.getElementById('productsTable');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (filteredProducts.length === 0) {
+                tableBody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            let tableHTML = '';
+
+            filteredProducts.forEach(product => {
+                const selected = selectedItems.get(product.id);
+                const sampleQty = selected ? selected.sampleQty : 0;
+                const boxQty = selected ? selected.boxQty : 0;
+                const total = (product.perSamplePrice * sampleQty) + (product.perBoxPrice * boxQty);
+                
+                tableHTML += `
+                <tr>
+                    <td>
+                        <div class="product-title">${escapeHtml(product.name)}</div>
+                        <div class="product-code">${escapeHtml(product.productNo.split(';')[0])}</div>
+                    </td>
+                    <td>
+                        <span style="background: rgba(26,111,252,0.1); color: var(--primary); padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500;">
+                            ${escapeHtml(product.category)}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-indicator ${product.status === '有货' ? 'status-available' : 'status-unavailable'}">
+                            ${escapeHtml(product.status)}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="price-detail">${escapeHtml(product.priceDetail)}</div>
+                        <div class="price-box">
+                            <div class="per-sample-price">单样价格: ¥${product.perSamplePrice.toFixed(2)}/样</div>
+                            <div class="per-box-price">盒价: ¥${product.perBoxPrice.toFixed(2)}/盒</div>
+                            <div class="price-source">解析来源: ${escapeHtml(product.priceSource)}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="number" 
+                               class="quantity-input" 
+                               min="0" 
+                               step="1"
+                               value="${sampleQty}"
+                               data-id="${product.id}"
+                               data-type="sample"
+                               onchange="updateQuantity(${product.id}, 'sample', this.value)">
+                    </td>
+                    <td>
+                        <input type="number" 
+                               class="quantity-input" 
+                               min="0" 
+                               step="1"
+                               value="${boxQty}"
+                               data-id="${product.id}"
+                               data-type="box"
+                               onchange="updateQuantity(${product.id}, 'box', this.value)">
+                    </td>
+                    <td>
+                        <div class="subtotal">¥${total.toFixed(2)}</div>
+                    </td>
+                </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = tableHTML;
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 更新数量（区分单样和盒装）
+        function updateQuantity(productId, type, value) {
+            const quantity = parseInt(value) || 0;
+            const product = allProducts.find(p => p.id === productId);
+            
+            if (!product) return;
+            
+            let selectedItem = selectedItems.get(productId) || { sampleQty: 0, boxQty: 0 };
+            
+            if (type === 'sample') {
+                selectedItem.sampleQty = quantity;
+            } else if (type === 'box') {
+                selectedItem.boxQty = quantity;
+            }
+            
+            if (selectedItem.sampleQty > 0 || selectedItem.boxQty > 0) {
+                selectedItems.set(productId, { ...selectedItem, product });
+            } else {
+                selectedItems.delete(productId);
+            }
+            
+            // 更新当前行的合计金额
+            const sampleInput = document.querySelector(`.quantity-input[data-id="${productId}"][data-type="sample"]`);
+            const boxInput = document.querySelector(`.quantity-input[data-id="${productId}"][data-type="box"]`);
+            
+            if (sampleInput && boxInput) {
+                const row = sampleInput.closest('tr');
+                if (row) {
+                    const subtotalCell = row.querySelector('.subtotal');
+                    if (subtotalCell) {
+                        const total = (product.perSamplePrice * selectedItem.sampleQty) + (product.perBoxPrice * selectedItem.boxQty);
+                        subtotalCell.textContent = `¥${total.toFixed(2)}`;
+                    }
+                }
+            }
+            
+            calculateQuote();
+        }
+
+        // 筛选产品
+        function filterProducts() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!query) {
+                filteredProducts = [...allProducts];
+            } else {
+                filteredProducts = allProducts.filter(product => 
+                    (product.name && product.name.toLowerCase().includes(query)) ||
+                    (product.productNo && product.productNo.toLowerCase().includes(query)) ||
+                    (product.category && product.category.toLowerCase().includes(query)) ||
+                    (product.priceDetail && product.priceDetail.toLowerCase().includes(query))
+                );
+            }
+            
+            renderProducts();
+        }
+
+        // 计算报价
+        function calculateQuote() {
+            let productCount = 0;
+            let totalSamples = 0;
+            let totalBoxes = 0;
+            let totalPrice = 0;
+            let detailsHTML = '';
+            
+            selectedItems.forEach(item => {
+                if (item.sampleQty > 0 || item.boxQty > 0) {
+                    productCount++;
+                    totalSamples += item.sampleQty;
+                    totalBoxes += item.boxQty;
+                    const itemTotal = (item.product.perSamplePrice * item.sampleQty) + (item.product.perBoxPrice * item.boxQty);
+                    totalPrice += itemTotal;
+
+                    detailsHTML += `
+                    <div class="selected-item">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500;">${escapeHtml(item.product.name)}</div>
+                            <div style="font-size: 0.85rem; color: var(--gray);">
+                                单样: ${item.sampleQty} 样 × ¥${item.product.perSamplePrice.toFixed(2)}<br>
+                                盒装: ${item.boxQty} 盒 × ¥${item.product.perBoxPrice.toFixed(2)}
+                            </div>
+                        </div>
+                        <div style="font-weight: 600; min-width: 80px; text-align: right;">
+                            ¥${itemTotal.toFixed(2)}
+                        </div>
+                    </div>
+                    `;
+                }
+            });
+            
+            document.getElementById('productCount').textContent = productCount;
+            document.getElementById('totalSamples').textContent = totalSamples;
+            document.getElementById('totalBoxes').textContent = totalBoxes;
+            document.getElementById('totalPrice').textContent = `¥${totalPrice.toFixed(2)}`;
+            
+            const selectedList = document.getElementById('selectedItemsList');
+            if (productCount > 0) {
+                selectedList.innerHTML = detailsHTML;
+            } else {
+                selectedList.innerHTML = `
+                <div class="empty-message">
+                    <p>已选产品将显示在这里</p>
+                    <p style="font-size: 0.85rem; margin-top: 0.5rem;">在表格中输入数量后自动计算</p>
+                </div>
+                `;
+            }
+        }
+
+        // 导出报价单
+        function exportQuote() {
+            if (selectedItems.size === 0) {
+                alert('请先选择产品并填写数量');
+                return;
+            }
+            
+            const exportData = [];
+            selectedItems.forEach(item => {
+                if (item.sampleQty > 0 || item.boxQty > 0) {
+                    exportData.push({
+                        '产品货号': item.product.rawData['产品货号'] || item.product.productNo,
+                        '分类': item.product.rawData['分类'] || item.product.category,
+                        '产品标题': item.product.rawData['产品标题'] || item.product.name,
+                        '状态': item.product.rawData['状态'] || item.product.status,
+                        '价格明细': item.product.rawData['价格明细'] || item.product.priceDetail,
+                        '单样价格': item.product.perSamplePrice,
+                        '盒价': item.product.perBoxPrice,
+                        '单位信息': item.product.unitInfo,
+                        '单样采购数量': item.sampleQty,
+                        '盒装采购数量': item.boxQty,
+                        '单样小计': (item.product.perSamplePrice * item.sampleQty).toFixed(2),
+                        '盒装小计': (item.product.perBoxPrice * item.boxQty).toFixed(2),
+                        '合计金额': ((item.product.perSamplePrice * item.sampleQty) + (item.product.perBoxPrice * item.boxQty)).toFixed(2)
+                    });
+                }
+            });
+            
+            // 添加汇总行
+            exportData.push({});
+            exportData.push({
+                '产品货号': '【总计】',
+                '分类': '',
+                '产品标题': '',
+                '状态': '',
+                '价格明细': '',
+                '单样价格': '',
+                '盒价': '',
+                '单位信息': '',
+                '单样采购数量': document.getElementById('totalSamples').textContent,
+                '盒装采购数量': document.getElementById('totalBoxes').textContent,
+                '单样小计': '',
+                '盒装小计': '',
+                '合计金额': document.getElementById('totalPrice').textContent.replace('¥', '')
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, '智能解析报价单');
+            
+            const fileName = `智能解析报价单_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+        }
+
+        // 清空所有选择
+        function clearSelections() {
+            if (selectedItems.size === 0) {
+                alert('当前没有已选产品');
+                return;
+            }
+            
+            if (confirm('确定要清空所有已输入的数量吗？')) {
+                selectedItems.clear();
+                renderProducts();
+                calculateQuote();
+            }
+        }
+
+        // 更新数据状态
+        function updateDataStatus(message) {
+            document.getElementById('dataStatus').textContent = message;
+        }
+
+        // 全局函数供onchange调用
+        window.updateQuantity = updateQuantity;
+    </script>
+</body>
+</html>
