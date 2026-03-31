@@ -1,0 +1,1641 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+ <title>病理检测自动报价系统</title>
+ <style>
+ * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+ body { background: #fff; padding: 0; margin: 0; overflow-x: hidden; }
+ @media (min-width: 768px) {
+ .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+ .main-wrapper { display: flex; gap: 25px; }
+ .left-panel { flex: 1.2; min-width: 320px; }
+ .right-panel { flex: 1; min-width: 500px; }
+ .action-buttons { flex-direction: row !important; justify-content: space-between; }
+ .action-buttons button { flex: 1; margin: 0 5px; }
+ }
+ @media (max-width: 767px) {
+ .container { width: 100%; padding: 0 10px; }
+ .main-wrapper { display: block; }
+ }
+ .header-bar {
+ background: linear-gradient(135deg, #1a5276, #3498db);
+ color: white; padding: 16px 15px; text-align: center;
+ position: sticky; top: 0; z-index: 100;
+ box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ }
+ .header-content { text-align: center; flex: 1; }
+ .header-bar h1 { font-size: clamp(1.2rem, 3vw, 1.8rem); margin-bottom: 4px; }
+ .header-bar p { font-size: clamp(0.75rem, 2vw, 1rem); opacity: 0.9; }
+ .admin-btn {
+ background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+ color: white; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem;
+ cursor: pointer; transition: all 0.3s;
+ }
+ .admin-btn:hover { background: rgba(255,255,255,0.3); }
+ .price-toolbar {
+ background: #e8f4fc; padding: 12px 15px;
+ display: flex; align-items: center; gap: 10px;
+ overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch;
+ }
+ .price-toolbar::-webkit-scrollbar { display: none; }
+ .price-toolbar label { font-weight: 500; color: #2c3e50; font-size: clamp(0.8rem, 2vw, 0.95rem); white-space: nowrap; }
+ .btn { padding: 8px 14px; border: none; border-radius: 6px; color: white; font-size: clamp(0.75rem, 2vw, 0.9rem); cursor: pointer; white-space: nowrap; }
+ .btn-green { background: #28a745; }
+ .btn-red { background: #dc3545; }
+ .price-tip { font-size: clamp(0.7rem, 1.8vw, 0.8rem); color: #666; margin-top: 8px; padding: 0 15px; line-height: 1.4; }
+ .main-container { padding: 15px; }
+ .section-title {
+ font-size: clamp(1.1rem, 2.5vw, 1.4rem); color: #2c3e50;
+ padding-bottom: 8px; border-bottom: 2px solid #3498db;
+ margin: 20px 0 15px;
+ }
+ .section-title:first-of-type { margin-top: 10px; }
+ .search-container { position: relative; margin: 10px 0 15px; }
+ .search-box { position: relative; }
+ .search-box input {
+ width: 100%; padding: 14px 15px 14px 45px;
+ border: 1px solid #3498db; border-radius: 8px;
+ font-size: clamp(0.85rem, 2vw, 1rem); outline: none;
+ }
+ .search-box::before {
+ content: "🔍"; position: absolute; left: 12px; top: 50%;
+ transform: translateY(-50%); font-size: clamp(0.9rem, 2vw, 1.1rem); color: #666;
+ }
+ .clear-search {
+ position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+ font-size: clamp(1rem, 2vw, 1.2rem); color: #999; cursor: pointer; display: none;
+ }
+ .clear-search.active { display: block; }
+ .search-filter { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+ .filter-tag {
+ padding: 4px 10px; border-radius: 20px; font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+ cursor: pointer; border: 1px solid #ddd; background: #f8f9fa; color: #666;
+ }
+ .filter-tag.active { background: #3498db; color: white; border-color: #3498db; }
+ .quick-quote-tags { display: flex; gap: 8px; margin: 8px 0 12px; flex-wrap: wrap; }
+ .quick-tag {
+ padding: 6px 12px; border-radius: 20px; font-size: clamp(0.75rem, 1.8vw, 0.85rem);
+ cursor: pointer; border: 1px solid #2ecc71; background: #e8f8f0; color: #27ae60;
+ font-weight: 500; transition: all 0.2s ease; position: relative;
+ }
+ .quick-tag:hover { background: #2ecc71; color: white; border-color: #27ae60; }
+ .quick-tag:active { transform: scale(0.98); }
+ .quick-tag .sub-tags { display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #ddd; border-radius: 6px; padding: 8px; min-width: 150px; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-top: 5px; }
+ .quick-tag:hover .sub-tags { display: block; }
+ .sub-tag { display: block; padding: 6px 10px; font-size: 0.8rem; color: #27ae60; cursor: pointer; border-radius: 4px; margin-bottom: 4px; }
+ .sub-tag:hover { background: #e8f8f0; }
+ .search-stats { font-size: clamp(0.75rem, 1.8vw, 0.85rem); color: #666; margin: 5px 0 10px; padding-left: 5px; }
+ .selected-tip {
+ background: #e3f2fd; border-left: 4px solid #2196f3; padding: 10px 12px; margin: 10px 0;
+ font-size: clamp(0.8rem, 2vw, 0.9rem); color: #1976d2; border-radius: 4px; display: none;
+ }
+ .selected-tip.active { display: block; }
+ .selected-count { font-weight: bold; color: #d32f2f; font-size: clamp(0.95rem, 2vw, 1.1rem); }
+ .slice-alert {
+ background: #fff3cd; border-left: 5px solid #ffc107; padding: 10px 12px; margin: 10px 0 15px;
+ display: flex; align-items: flex-start; gap: 8px;
+ }
+ .slice-alert .icon { color: #ffc107; font-size: clamp(1rem, 2vw, 1.2rem); margin-top: 2px; }
+ .slice-alert .text { color: #856404; font-size: clamp(0.8rem, 2vw, 0.9rem); line-height: 1.4; }
+ .qty-subtotal { font-size: clamp(0.7rem, 1.8vw, 0.8rem); color: #28a745; font-weight: bold; margin-top: 4px; min-height: 1.2em; }
+ .category-block { margin-bottom: 20px; background: #f8f9fa; border-radius: 6px; padding: 12px; }
+ .category-title {
+ font-size: clamp(0.95rem, 2vw, 1.1rem); color: #34495e; margin-bottom: 10px;
+ display: flex; align-items: center; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid #dee2e6;
+ }
+ .category-title::before { content: "●"; color: #3498db; font-size: clamp(0.75rem, 1.8vw, 0.85rem); }
+ .service-table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 10px; }
+ .service-table { width: 100%; min-width: 500px; border-collapse: collapse; }
+ .service-table th, .service-table td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #dee2e6; font-size: clamp(0.8rem, 2vw, 0.9rem); }
+ .service-table th { background: #e9ecef; font-weight: 500; color: #495057; }
+ .price-red { color: #dc3545; font-weight: 600; }
+ .unit-green { color: #28a745; }
+ .custom-tag {
+ display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: clamp(0.6rem, 1.5vw, 0.7rem); margin-left: 4px; font-weight: 500;
+ }
+ .slice-tag { background: #dc3545; color: white; }
+ .not-alone-tag { background: #ffc107; color: #212529; }
+ .qty-input {
+ width: clamp(65px, 10vw, 80px); padding: 7px 8px; border: 1px solid #ddd; border-radius: 4px;
+ text-align: center; outline: none; font-size: clamp(0.85rem, 2vw, 0.95rem);
+ }
+ .qty-input:focus { border-color: #3498db; }
+ .qty-input.slice-input { border-color: #dc3545; }
+ .qty-input.has-value { border-color: #28a745; }
+ .desc { font-size: clamp(0.7rem, 1.8vw, 0.8rem); color: #666; line-height: 1.3; margin-top: 3px; }
+ .note { font-size: clamp(0.65rem, 1.5vw, 0.75rem); color: #dc3545; margin-top: 3px; font-style: italic; }
+ .action-buttons { display: flex; flex-direction: column; gap: 12px; margin: 25px 0; }
+ .btn-blue, .btn-gray, .btn-export { padding: 14px; font-size: clamp(0.9rem, 2vw, 1.1rem); border-radius: 8px; border: none; color: white; cursor: pointer; }
+ .btn-blue { background: #3498db; } .btn-gray { background: #adb5bd; } .btn-export { background: #28a745; }
+ .calc-section { margin-bottom: 20px; }
+ .calc-card { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+ .calc-btn {
+ width: 100%; padding: 16px; font-size: clamp(1rem, 2.2vw, 1.2rem); font-weight: bold;
+ border-radius: 8px; border: none; background: #3498db; color: white; cursor: pointer; margin-bottom: 10px;
+ }
+ .calc-tip { font-size: clamp(0.75rem, 1.8vw, 0.85rem); color: #666; line-height: 1.4; }
+ .result-card { background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0; }
+ .result-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: clamp(0.8rem, 2vw, 0.9rem); }
+ .result-name { color: #2c3e50; word-break: break-all; max-width: clamp(180px, 40vw, 300px); }
+ .result-amount { color: #dc3545; font-weight: 600; }
+ .detail-item { margin-bottom: 12px; }
+ .detail-header { display: flex; justify-content: space-between; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
+ .detail-qty { font-size: 0.9em; color: #666; margin-left: 10px; font-weight: normal; }
+ .detail-calc { font-size: 0.85em; color: #666; margin-left: 5px; font-weight: normal; }
+ .detail-total { font-weight: bold; color: #28a745; }
+ .detail-note { font-size: 0.8em; color: #dc3545; font-style: italic; margin-top: 2px; }
+ .summary-section { margin-top: 15px; padding-top: 10px; border-top: 2px solid #3498db; }
+ .summary-row { display: flex; justify-content: space-between; margin: 5px 0; font-size: clamp(0.9rem, 2vw, 1rem); }
+ .summary-label { color: #2c3e50; }
+ .summary-value { color: #dc3545; font-weight: 600; }
+ .total-row { display: flex; justify-content: space-between; padding: 15px 0; margin-top: 8px; border-top: 2px solid #3498db; }
+ .total-label { font-size: clamp(1rem, 2.2vw, 1.2rem); font-weight: bold; color: #2c3e50; }
+ .total-amount { font-size: clamp(1.2rem, 2.5vw, 1.4rem); font-weight: bold; color: #dc3545; }
+ .quote-details {
+ background: #f8f9fa; padding: 15px; border-radius: 6px; white-space: pre-line;
+ font-size: clamp(0.75rem, 1.8vw, 0.85rem); line-height: 1.5; max-height: 250px; overflow-y: auto; margin: 15px 0;
+ }
+ .no-result { text-align: center; padding: 30px 0; color: #666; display: none; font-size: clamp(0.9rem, 2vw, 1rem); }
+ #fileInput { display: none; }
+
+ /* ===== 管理员后台样式 ===== */
+ .admin-overlay {
+ position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+ background: rgba(0,0,0,0.5); z-index: 1000; display: none;
+ align-items: center; justify-content: center;
+ }
+ .admin-overlay.active { display: flex; }
+ .admin-modal {
+ background: white; border-radius: 12px; width: 95%; max-width: 950px;
+ max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;
+ box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+ }
+ .admin-header {
+ background: linear-gradient(135deg, #2c3e50, #34495e); color: white;
+ padding: 20px; display: flex; justify-content: space-between; align-items: center;
+ }
+ .admin-header h2 { font-size: 1.4rem; margin: 0; }
+ .admin-header .admin-info { font-size: 0.9rem; opacity: 0.8; }
+ .admin-close {
+ background: none; border: none; color: white; font-size: 1.8rem;
+ cursor: pointer; opacity: 0.8; transition: opacity 0.3s;
+ }
+ .admin-close:hover { opacity: 1; }
+ .admin-content { padding: 20px; overflow-y: auto; flex: 1; }
+ .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e9ecef; flex-wrap: wrap; }
+ .admin-tab {
+ padding: 10px 20px; border: none; background: none;
+ font-size: 0.95rem; cursor: pointer; position: relative; color: #666;
+ }
+ .admin-tab.active { color: #3498db; font-weight: 600; }
+ .admin-tab.active::after {
+ content: ''; position: absolute; bottom: -2px; left: 0; width: 100%;
+ height: 3px; background: #3498db;
+ }
+ .admin-tab-content { display: none; }
+ .admin-tab-content.active { display: block; }
+ .form-group { margin-bottom: 15px; }
+ .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #2c3e50; }
+ .form-group input, .form-group select, .form-group textarea {
+ width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;
+ font-size: 0.9rem; outline: none; transition: border-color 0.3s;
+ }
+ .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #3498db; }
+ .form-group textarea { resize: vertical; min-height: 80px; }
+ .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+ .checkbox-group { display: flex; align-items: center; gap: 8px; }
+ .checkbox-group input { width: auto; }
+ .product-list {
+ background: #f8f9fa; border-radius: 8px; padding: 15px;
+ max-height: 400px; overflow-y: auto; margin-top: 15px;
+ }
+ .product-item {
+ background: white; padding: 12px; border-radius: 6px; margin-bottom: 10px;
+ border-left: 4px solid #3498db; display: flex; justify-content: space-between;
+ align-items: center;
+ }
+ .product-info h4 { margin: 0 0 5px 0; font-size: 1rem; color: #2c3e50; }
+ .product-info p { margin: 0; font-size: 0.85rem; color: #666; }
+ .product-actions { display: flex; gap: 8px; }
+ .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+ .btn-primary { background: #3498db; }
+ .btn-danger { background: #dc3545; }
+ .btn-warning { background: #ffc107; color: #212529; }
+ .tag-list {
+ background: #f8f9fa; border-radius: 8px; padding: 15px;
+ max-height: 300px; overflow-y: auto;
+ }
+ .tag-item {
+ background: white; padding: 10px; border-radius: 6px; margin-bottom: 8px;
+ display: flex; justify-content: space-between; align-items: center;
+ }
+ .tag-name {
+ display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem;
+ font-weight: 500;
+ }
+ .admin-list {
+ background: #f8f9fa; border-radius: 8px; padding: 15px;
+ max-height: 300px; overflow-y: auto;
+ }
+ .admin-item {
+ background: white; padding: 12px; border-radius: 6px; margin-bottom: 10px;
+ display: flex; justify-content: space-between; align-items: center;
+ }
+ .admin-item.super { border-left: 4px solid #e74c3c; }
+ .admin-item.normal { border-left: 4px solid #3498db; }
+ .admin-info h4 { margin: 0 0 3px 0; font-size: 1rem; }
+ .admin-info p { margin: 0; font-size: 0.8rem; color: #666; }
+ .badge {
+ display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 500;
+ }
+ .badge-super { background: #e74c3c; color: white; }
+ .badge-normal { background: #3498db; color: white; }
+ .log-list {
+ background: #f8f9fa; border-radius: 8px; padding: 15px;
+ max-height: 300px; overflow-y: auto;
+ }
+ .log-item {
+ padding: 10px; border-bottom: 1px solid #dee2e6; font-size: 0.85rem;
+ }
+ .log-item:last-child { border-bottom: none; }
+ .log-time { color: #999; font-size: 0.8rem; }
+ .log-action { color: #3498db; font-weight: 500; }
+ .login-modal {
+ background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 400px;
+ text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+ }
+ .login-modal h3 { margin-bottom: 20px; color: #2c3e50; }
+ .login-btn {
+ width: 100%; padding: 12px; background: #3498db; color: white;
+ border: none; border-radius: 6px; font-size: 1rem; cursor: pointer;
+ margin-top: 15px;
+ }
+ .login-btn:hover { background: #2980b9; }
+ .empty-state {
+ text-align: center; padding: 40px 20px; color: #999;
+ }
+ .empty-state::before {
+ content: "📋"; display: block; font-size: 3rem; margin-bottom: 10px;
+ }
+ .color-picker {
+ display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;
+ }
+ .color-option {
+ width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+ border: 3px solid transparent; transition: all 0.3s;
+ }
+ .color-option.selected { border-color: #3498db; transform: scale(1.1); }
+ .init-modal { background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+ .init-modal h3 { margin-bottom: 15px; color: #2c3e50; font-size: 1.3rem; }
+ .init-modal p { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+ .error-msg { color: #dc3545; font-size: 0.85rem; margin-top: 10px; display: none; }
+ .success-msg { color: #28a745; font-size: 0.85rem; margin-top: 10px; display: none; }
+ .sub-category-form { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 15px; }
+ .sub-category-list { background: #f8f9fa; border-radius: 8px; padding: 15px; max-height: 250px; overflow-y: auto; margin-top: 10px; }
+ .sub-category-item { background: white; padding: 10px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+ </style>
+ <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+ <div class="header-bar">
+ <div class="header-content">
+ <h1>病理检测自动报价系统</h1>
+ <p>多端适配 | 快速报价 | 精准计算</p>
+ </div>
+ <button class="admin-btn" id="adminEntry">管理员入口</button>
+ </div>
+
+ <!-- 初始化弹窗 -->
+ <div class="admin-overlay" id="initOverlay">
+ <div class="init-modal">
+ <h3>⚙️ 系统初始化</h3>
+ <p>首次使用，请创建管理员账号</p>
+ <div class="form-group">
+ <input type="text" id="initUsername" placeholder="用户名" autocomplete="off">
+ </div>
+ <div class="form-group">
+ <input type="password" id="initPassword" placeholder="密码" autocomplete="off">
+ </div>
+ <div class="form-group">
+ <input type="password" id="initConfirmPassword" placeholder="确认密码" autocomplete="off">
+ </div>
+ <div class="error-msg" id="initError"></div>
+ <button class="login-btn" id="initBtn" style="background: #27ae60;">创建管理员</button>
+ </div>
+ </div>
+
+ <!-- 管理员登录弹窗 -->
+ <div class="admin-overlay" id="loginOverlay">
+ <div class="login-modal">
+ <h3>🔐 管理员登录</h3>
+ <div class="form-group">
+ <input type="text" id="adminUsername" placeholder="用户名" autocomplete="off" />
+ </div>
+ <div class="form-group">
+ <input type="password" id="adminPassword" placeholder="密码" autocomplete="off" />
+ </div>
+ <div class="error-msg" id="loginError"></div>
+ <button class="login-btn" id="loginBtn">登录</button>
+ <button class="login-btn" style="background: #95a5a6;" onclick="closeAdmin()">取消</button>
+ </div>
+ </div>
+
+ <!-- 管理员后台弹窗 -->
+ <div class="admin-overlay" id="adminOverlay">
+ <div class="admin-modal">
+ <div class="admin-header">
+ <div>
+ <h2>📊 管理员后台</h2>
+ <div class="admin-info" id="currentAdminInfo"></div>
+ </div>
+ <button class="admin-close" onclick="closeAdmin()">×</button>
+ </div>
+ <div class="admin-content">
+ <div class="admin-tabs" id="adminTabs">
+ <button class="admin-tab active" data-tab="price">修改价格</button>
+ <button class="admin-tab" data-tab="product">添加产品</button>
+ <button class="admin-tab" data-tab="category">添加分类</button>
+ <button class="admin-tab" data-tab="quick">快捷搜索</button>
+ <button class="admin-tab" data-tab="tags">特殊标记</button>
+ <button class="admin-tab" data-tab="admins">管理员</button>
+ <button class="admin-tab" data-tab="log">操作日志</button>
+ </div>
+
+ <!-- 修改价格 -->
+ <div class="admin-tab-content active" id="tab-price">
+ <div class="form-group">
+ <label>选择要修改的产品（可多选）:</label>
+ <div class="product-list" id="priceProductList"></div>
+ </div>
+ <div class="form-group">
+ <label>新价格 (元):</label>
+ <input type="number" id="newPriceInput" min="0" step="0.01" placeholder="输入新价格">
+ </div>
+ <button class="btn btn-primary" onclick="batchUpdatePrice()">批量修改价格</button>
+ </div>
+
+ <!-- 添加产品 -->
+ <div class="admin-tab-content" id="tab-product">
+ <div class="form-group">
+ <label>服务分类:</label>
+ <select id="productCategory">
+ <option value="">请选择分类</option>
+ </select>
+ </div>
+ <div class="form-group">
+ <label>服务名称:</label>
+ <input type="text" id="productName" placeholder="输入服务名称">
+ </div>
+ <div class="form-row">
+ <div class="form-group">
+ <label>价格 (元):</label>
+ <input type="number" id="productPrice" min="0" step="0.01" placeholder="输入价格">
+ </div>
+ <div class="form-group">
+ <label>单位:</label>
+ <input type="text" id="productUnit" placeholder="如: 张/样">
+ </div>
+ </div>
+ <div class="form-group">
+ <label>内容/应用描述:</label>
+ <textarea id="productDesc" placeholder="输入服务描述（选填）"></textarea>
+ </div>
+ <div class="form-group">
+ <label>备注:</label>
+ <textarea id="productNote" placeholder="输入备注信息（选填）"></textarea>
+ </div>
+ <button class="btn btn-primary" onclick="addProduct()">添加产品</button>
+ </div>
+
+ <!-- 添加分类 -->
+ <div class="admin-tab-content" id="tab-category">
+ <div class="form-group">
+ <label>新分类名称:</label>
+ <input type="text" id="newCategoryName" placeholder="输入分类名称">
+ </div>
+ <div class="form-group">
+ <label>现有分类:</label>
+ <div id="existingCategories" style="padding: 10px; background: #f8f9fa; border-radius: 6px;"></div>
+ </div>
+ <button class="btn btn-primary" onclick="addCategory()">添加分类</button>
+ </div>
+
+ <!-- 快捷搜索管理 -->
+ <div class="admin-tab-content" id="tab-quick">
+ <div class="form-group">
+ <label>快捷标签名称:</label>
+ <input type="text" id="quickTagName" placeholder="如: 组织样本套餐">
+ </div>
+ <div class="form-group">
+ <label>搜索关键词 (用空格分隔):</label>
+ <textarea id="quickTagKeywords" placeholder="如: 石蜡包埋 石蜡切片 HE染色" rows="3"></textarea>
+ </div>
+ <button class="btn btn-primary" onclick="addQuickTag()">添加快捷标签</button>
+ <div class="form-group" style="margin-top: 20px;">
+ <label>现有快捷标签:</label>
+ <div id="quickTagList" class="tag-list"></div>
+ </div>
+ </div>
+
+ <!-- 特殊标记管理 -->
+ <div class="admin-tab-content" id="tab-tags">
+ <div class="form-group">
+ <label>标记名称:</label>
+ <input type="text" id="newTagName" placeholder="如: 新品、热销、推荐">
+ </div>
+ <div class="form-group">
+ <label>标记颜色:</label>
+ <div class="color-picker" id="colorPicker">
+ <div class="color-option selected" style="background: #dc3545;" data-color="#dc3545" data-name="slice"></div>
+ <div class="color-option" style="background: #ffc107;" data-color="#ffc107" data-name="notalone"></div>
+ <div class="color-option" style="background: #e74c3c;" data-color="#e74c3c" data-name="hot"></div>
+ <div class="color-option" style="background: #3498db;" data-color="#3498db" data-name="new"></div>
+ <div class="color-option" style="background: #9b59b6;" data-color="#9b59b6" data-name="promo"></div>
+ </div>
+ </div>
+ <button class="btn btn-primary" onclick="addCustomTag()">添加标记</button>
+ <div class="form-group" style="margin-top: 20px;">
+ <label>现有标记:</label>
+ <div id="tagList" class="tag-list"></div>
+ </div>
+ </div>
+
+ <!-- 管理员管理 -->
+ <div class="admin-tab-content" id="tab-admins">
+ <div class="form-group">
+ <label>用户名:</label>
+ <input type="text" id="newAdminName" placeholder="输入用户名">
+ </div>
+ <div class="form-group">
+ <label>密码:</label>
+ <input type="password" id="newAdminPwd" placeholder="输入密码">
+ </div>
+ <div class="form-group">
+ <label>权限级别:</label>
+ <select id="newAdminRole">
+ <option value="normal">普通管理员</option>
+ <option value="super">超级管理员</option>
+ </select>
+ </div>
+ <button class="btn btn-primary" onclick="addAdmin()">添加管理员</button>
+ <div class="form-group" style="margin-top: 20px;">
+ <label>现有管理员:</label>
+ <div id="adminList" class="admin-list"></div>
+ </div>
+ </div>
+
+ <!-- 操作日志 -->
+ <div class="admin-tab-content" id="tab-log">
+ <div class="form-group">
+ <button class="btn btn-sm btn-warning" onclick="clearLogs()">清空日志</button>
+ <button class="btn btn-sm btn-primary" onclick="exportLogs()">导出日志</button>
+ </div>
+ <div class="log-list" id="logList"></div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <div class="container">
+ <div class="price-toolbar">
+ <label>价格表:</label>
+ <button class="btn btn-green" id="uploadBtn">上传Excel</button>
+ <input type="file" id="fileInput" accept=".xlsx,.xls">
+ <button class="btn btn-green" id="templateBtn">下载模板</button>
+ <button class="btn btn-red" id="resetPriceBtn">恢复默认</button>
+ </div>
+ <div class="price-tip">支持.xlsx/.xls格式 | 搜索不丢失已选数量</div>
+ <div class="main-container">
+ <div class="main-wrapper">
+ <div class="left-panel">
+ <h2 class="section-title">检测项目选择</h2>
+ <div class="search-container">
+ <div class="search-box">
+ <input type="text" id="searchInput" placeholder="搜索：名称/分类/价格/单位/描述">
+ <div class="clear-search" id="clearSearch">✕</div>
+ </div>
+ <div class="search-filter">
+ <div class="filter-tag active" data-type="all">全部</div>
+ <div class="filter-tag" data-type="name">名称</div>
+ <div class="filter-tag" data-type="category">分类</div>
+ <div class="filter-tag" data-type="price">价格</div>
+ <div class="filter-tag" data-type="desc">描述</div>
+ </div>
+ <div class="quick-quote-tags" id="quickQuoteTags"></div>
+ <div class="search-stats" id="searchStats">共 69 个检测项目</div>
+ </div>
+ <div class="selected-tip" id="selectedTip">已选 <span id="selectedCount" class="selected-count">0</span> 项 → 切换搜索不清空</div>
+ <div class="slice-alert"><span class="icon">⚠️</span><span class="text"><strong>切片规则：</strong>含「2片起切」的项目，输入数量＜2时自动按2片计费</span></div>
+ <div id="serviceContainer"></div>
+ <div class="no-result" id="noResult">暂无匹配项目</div>
+ <div class="action-buttons">
+ <button class="btn-gray" id="resetBtn">重置选择</button>
+ <button class="btn-export" id="exportBtn">导出报价单</button>
+ </div>
+ </div>
+ <div class="right-panel">
+ <div class="guide-section">
+ <h3 class="section-title">使用流程</h3>
+ <ol class="step-list" style="counter-reset: step;">
+ <li><strong>上传或确认价格表</strong>：可使用上方按钮上传自定义Excel价格表，或直接使用系统默认价格。</li>
+ <li><strong>搜索与选择项目</strong>：在左侧通过关键词搜索，或按分类浏览。在目标项目的"数量"栏填写所需数量。</li>
+ <li><strong>计算报价</strong>：选择完所有项目后，点击本区域下方的"计算报价"按钮。</li>
+ <li><strong>核对与导出</strong>：查看生成的"报价结果"和"报价详情"。确认无误后，点击左侧面板的"导出报价单"下载Excel文件。</li>
+ </ol>
+ </div>
+ <div class="calc-section">
+ <h2 class="section-title">计算报价</h2>
+ <div class="calc-card"><button class="calc-btn" id="calcBtn">计算报价</button><p class="calc-tip">点击按钮，将根据左侧已选项目及数量计算总费用</p></div>
+ <h2 class="section-title">报价结果（详细）</h2>
+ <div class="result-card">
+ <div id="resultList" style="max-height: 200px; overflow-y: auto;">
+ <div class="result-item"><span class="result-name">请选择项目并计算</span><span class="result-amount">-</span></div>
+ </div>
+ <div id="detailList"></div>
+ <div class="summary-section">
+ <div class="summary-row">
+ <span class="summary-label">项目数量：</span>
+ <span class="summary-value" id="itemCount">0 项</span>
+ </div>
+ <div class="summary-row">
+ <span class="summary-label">计费数量：</span>
+ <span class="summary-value" id="totalQty">0</span>
+ </div>
+ <div class="total-row">
+ <span class="total-label">总计金额：</span>
+ <span class="total-amount" id="totalAmount">¥0.00</span>
+ </div>
+ </div>
+ </div>
+ <h2 class="section-title">报价详情（文本版）</h2>
+ <div class="quote-details" id="quoteDetails">病理检测报价单
+===================
+选择的检测项目:
+- 暂无选择
+费用计算规则:
+- 切片类项目: 2片起切，输入数量<2时按2片计算
+- 其他项目: 无起切限制，按实际输入计算
+费用计算:
+- 总计: ¥0.00
+备注:
+1. 搜索支持多维度筛选，结果实时展示
+2. 已填数量不会丢失，支持跨搜索累计选择
+3. 标注"不单接"的项目需结合其他项目选择
+4. 实际费用以最终确认为准
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <script>
+ const MIN_SLICE = 2;
+ let originalData = [];
+ let selectedQuantities = {};
+ let currentSearchType = "all";
+ let lastSearchKeyword = "";
+ let selectedForPriceUpdate = new Set();
+ let operationLogs = [];
+ let currentAdmin = null;
+ let customTags = [];
+ let quickTags = [];
+ let admins = [];
+ let selectedColor = "#dc3545";
+ let selectedColorName = "slice";
+
+ const DEFAULT_DATA = [
+ {category: "组织样本基础处理",name: "石蜡包埋",price: 15,unit: "样",desc: "提供10%Formalin/4%PFA固定组织，需明确切面要求",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织样本基础处理",name: "细胞爬片",price: 110,unit: "片",desc: "",note: "",isSlice: false,notAlone: true,tags: []},
+ {category: "组织样本基础处理",name: "石蜡切片",price: 5,unit: "张",desc: "提供蜡块，单纯切片每个蜡块2张起切，默认做防脱切片",note: "",isSlice: true,notAlone: false,tags: []},
+ {category: "组织样本基础处理",name: "组织脱钙",price: 50,unit: "样",desc: "骨组织，小鼠2-3周，大鼠4-6周",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织样本基础处理",name: "OCT包埋",price: 10,unit: "样",desc: "需明确切面要求，区分固定组织或者新鲜组织",note: "骨头样本，在包埋前需要脱钙",isSlice: false,notAlone: false,tags: []},
+ {category: "组织样本基础处理",name: "冰冻切片",price: 10,unit: "张",desc: "",note: "",isSlice: true,notAlone: false,tags: []},
+ {category: "组织样本基础处理(特殊组织)",name: "石蜡包埋(特殊组织)",price: 30,unit: "样",desc: "脑、眼球、细胞团、类器官、材料、植物等特殊组织",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织样本基础处理(特殊组织)",name: "石蜡切片(特殊组织)",price: 10,unit: "张",desc: "提供蜡块，如骨关节、脑、材料等特殊样本，单纯切片2张起切",note: "",isSlice: true,notAlone: false,tags: []},
+ {category: "组织样本基础处理(特殊组织)",name: "冰冻切片(特殊组织)",price: 20,unit: "样",desc: "特殊厚度，特殊位置要求",note: "",isSlice: true,notAlone: false,tags: []},
+ {category: "组织芯片阵列制作",name: "组织取芯位置标记",price: 20,unit: "点",desc: "病理医生通过HE片(切片+HE染色正常计费)，根据要求分析并标记取芯位置",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织芯片阵列制作",name: "组织取芯阵列制作",price: 40,unit: "点",desc: "取芯具体直径商定",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织芯片阵列制作",name: "阵列蜡块切片",price: 20,unit: "张",desc: "要求30张起切，建议一次性将芯片蜡块连续切完",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织芯片阵列制作",name: "冰冻切片",price: 10,unit: "张",desc: "用于组织芯片样本",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织切片染色（常规/特殊染色）",name: "HE染色(组织形态)",price: 10,unit: "张",desc: "提供蜡块/切片",note: "染色报价不含切片、拍照或扫描，部分特殊染色6张起染，更多特殊染色详询销售工程师。",isSlice: false,notAlone: false,tags: []},
+ {category: "组织切片染色（常规/特殊染色）",name: "马森(Masson)染色(胶原纤维)",price: 30,unit: "张",desc: "提供蜡块/切片",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织切片染色（常规/特殊染色）",name: "天狼星红染色(胶原纤维)",price: 30,unit: "张",desc: "提供蜡块/切片",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织切片染色（常规/特殊染色）",name: "PAS糖原染色(粘液和霉菌)",price: 30,unit: "张",desc: "提供蜡块/切片",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织切片染色（常规/特殊染色）",name: "AB-PAS爱先蓝-糖原染色(粘液)",price: 40,unit: "张",desc: "提供蜡块/切片",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织切片染色（常规/特殊染色）",name: "油红O染色",price: 30,unit: "张",desc: "提供蜡块/切片",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织切片染色（常规/特殊染色）",name: "尼氏染色",price: 30,unit: "张",desc: "提供蜡块/切片",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织切片染色（常规/特殊染色）",name: "甲苯胺蓝",price: 30,unit: "张",desc: "提供蜡块/切片",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织切片染色（常规/特殊染色）",name: "茜素红染色",price: 140,unit: "张",desc: "提供蜡块/切片",note: "",isSlice: false,notAlone: true,tags: []},
+ {category: "组织切片染色（常规/特殊染色）",name: "ALP染色",price: 140,unit: "张",desc: "提供蜡块/切片",note: "",isSlice: false,notAlone: true,tags: []},
+ {category: "多重免疫荧光",name: "抗体使用费",price: 30,unit: "样/指标",desc: "",note: "以上免疫染色需单独做预实验，四标以上荧光现询。每个指标抗体使用费用是30元 单标30 * 1 双标30 * 2 三标30 * 3",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "免疫组化",price: 35,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "免疫组化+全景扫描",price: 85,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "免疫荧光(单标)",price: 80,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "免疫荧光(单标)+全景扫描",price: 160,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "免疫荧光(双标)",price: 100,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "免疫荧光(双标)+全景扫描",price: 200,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "免疫荧光(三标)",price: 200,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "免疫荧光(三标)+全景扫描",price: 400,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "免疫荧光(四标)",price: 400,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "免疫荧光(四标)+全景扫描",price: 800,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "免疫荧光(五标)",price: 800,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "免疫荧光(五标)+全景扫描",price: 1600,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "Tunel凋亡染色(DAB/荧光)",price: 220,unit: "张",desc: "提供切片/爬片",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "多重免疫荧光",name: "Tunel凋亡染色(DAB/荧光)+全景扫描",price: 300,unit: "张",desc: "提供切片/爬片",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织（芯片）多重荧光（含扫描）芯片客户自己提供",name: "免疫组化+全景扫描",price: 400,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织（芯片）多重荧光（含扫描）芯片客户自己提供",name: "免疫荧光（单标）+全景扫描",price: 800,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织（芯片）多重荧光（含扫描）芯片客户自己提供",name: "免疫荧光（双标）+全景扫描",price: 1600,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织（芯片）多重荧光（含扫描）芯片客户自己提供",name: "免疫荧光（三标）+全景扫描",price: 2400,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织（芯片）多重荧光（含扫描）芯片客户自己提供",name: "免疫荧光（四标）+全景扫描",price: 5000,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "组织（芯片）多重荧光（含扫描）芯片客户自己提供",name: "免疫荧光（五标）+全景扫描",price: 7000,unit: "张",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "分子病理/超微病理检测",name: "原位杂交ISH/FISH（单标）",price: 240,unit: "张",desc: "可检测DNA/mRNA /LnCRNA/miRNA，客户提供探针、试剂盒",note: "注:原位杂交建议客户选用地高辛标记探针，该探针转化为荧光标记，可用于荧光多标实验。",isSlice: false,notAlone: false,tags: []},
+ {category: "分子病理/超微病理检测",name: "原位杂交探针定制",price: 1500,unit: "项",desc: "多种标记可以选，具体咨询",note: "1500起，具体询价",isSlice: false,notAlone: false,tags: []},
+ {category: "分子病理/超微病理检测",name: "快速石蜡处理",price: 200,unit: "样",desc: "针对需要快速诊断的样本，处理周期24-48小时",note: "加急服务，适用于术中诊断等紧急情况",isSlice: false,notAlone: false,tags: []},
+ {category: "分子病理/超微病理检测",name: "透射电镜样本制备",price: 800,unit: "样",desc: "样本前处理、固定、脱水、包埋、超薄切片、染色",note: "需提供新鲜或固定组织",isSlice: false,notAlone: false,tags: []},
+ {category: "分子病理/超微病理检测",name: "透射电镜观察与拍照",price: 500,unit: "小时",desc: "电镜观察、图像采集、分析",note: "最低计费1小时",isSlice: false,notAlone: false,tags: []},
+ {category: "分子病理/超微病理检测",name: "扫描电镜样本制备",price: 600,unit: "样",desc: "样本固定、脱水、干燥、喷金处理",note: "适用于材料、细胞等表面形貌观察",isSlice: false,notAlone: false,tags: []},
+ {category: "分子病理/超微病理检测",name: "扫描电镜观察与拍照",price: 400,unit: "小时",desc: "电镜观察、图像采集、三维重构",note: "最低计费1小时",isSlice: false,notAlone: false,tags: []},
+ {category: "切片扫描/拍照",name: "白光扫描(常规切片)",price: 50,unit: "张",desc: "具体根据组织大小商定",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "切片扫描/拍照",name: "白光拍照",price: 80,unit: "样/时间点",desc: "提供切片/细胞爬片,一抗",note: "",isSlice: false,notAlone: true,tags: []},
+ {category: "切片扫描/拍照",name: "白光扫描(组织芯片)",price: 250,unit: "张",desc: "具体根据组织大小商定",note: "200-300元/张",isSlice: false,notAlone: false,tags: []},
+ {category: "切片扫描/拍照",name: "荧光扫描(单标/双标/三标/四标/五标)",price: 80,unit: "张",desc: "具体根据组织大小商定",note: "80/120/240/460/880元/张",isSlice: false,notAlone: false,tags: []},
+ {category: "切片扫描/拍照",name: "荧光扫描(组织芯片荧光单标/双标/三标/四标/五标)",price: 2000,unit: "张",desc: "具体根据组织点阵数量商定",note: "1000-3000元/张",isSlice: false,notAlone: false,tags: []},
+ {category: "切片扫描/拍照",name: "did远红外光扫描",price: 80,unit: "张",desc: "具体根据样本以及需求来定",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "切片扫描/拍照",name: "共聚焦(单标/双标/三标）",price: 150,unit: "张",desc: "具体根据样本以及需求来定",note: "150/300/450元/张",isSlice: false,notAlone: false,tags: []},
+ {category: "临床病理读片分析/科研",name: "染色分析",price: 200,unit: "样",desc: "具体根据样本以及需求来定",note: "",isSlice: false,notAlone: true,tags: []},
+ {category: "临床病理读片分析/科研",name: "常规病理描述分析",price: 40,unit: "张/视野",desc: "提供代表性图片及病理常规分级;多视野分析及特殊要求详询",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "临床病理读片分析/科研",name: "阳性细胞数量和平均光密度值分析",price: 30,unit: "张/视野",desc: "提供代表性图片及病理常规分级;多视野分析及特殊要求详询",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "临床病理读片分析/科研",name: "阳性率分析（荧光分析）",price: 25,unit: "张/视野",desc: "提供代表性图片及病理常规分级;多视野分析及特殊要求详询",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "临床病理读片分析/科研",name: "常规病理描述+病理评分",price: 60,unit: "张/视野",desc: "提供代表性图片重点病变描述及病理评分(需要提供评分标准)",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "临床病理读片分析/科研",name: "病理评分",price: 40,unit: "张/视野",desc: "涉及HE+特染等共评，60-80元/例(需要提供评分标准)",note: "",isSlice: false,notAlone: false,tags: []},
+ {category: "临床病理读片分析/科研",name: "病理医师+AI辅助(简易标注)",price: 85,unit: "全切片",desc: "适用于免疫组化、荧光、特殊染色，如IHC表达分析、纤维化面积、脂肪细胞大小、血管密度、肿瘤面积、转移灶数量/面积、坏死/栓塞及目的组织分类等",note: "50-120元/全切片",isSlice: false,notAlone: false,tags: []},
+ ];
+
+ const DEFAULT_QUICK_TAGS = [
+ {name: "组织样本标准全流程", keywords: "石蜡包埋 石蜡切片 HE染色 白光扫描 常规病理描述分析 常规病理描述+病理评分", subCategories: []},
+ {name: "特殊组织处理", keywords: "石蜡包埋(特殊组织) 石蜡切片(特殊组织)", subCategories: []},
+ {name: "染色+扫描", keywords: "HE染色 免疫组化 免疫荧光 扫描", subCategories: []},
+ {name: "细胞样本套餐", keywords: "细胞爬片 免疫荧光 扫描", subCategories: []},
+ {name: "冰冻切片套餐", keywords: "OCT包埋 冰冻切片 HE染色 扫描", subCategories: []}
+ ];
+
+ window.onload = () => {
+ loadFromStorage();
+ originalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+ initSelectedQuantities();
+ renderServices(originalData);
+ updateSelectedTip();
+ updateSearchStats(originalData.length);
+ renderQuickTags();
+
+ if (admins.length === 0) {
+ document.getElementById("initOverlay").classList.add("active");
+ } else {
+ document.getElementById("initOverlay").classList.remove("active");
+ }
+
+ document.getElementById("uploadBtn").addEventListener("click", () => document.getElementById("fileInput").click());
+ document.getElementById("fileInput").addEventListener("change", parseExcel);
+ document.getElementById("templateBtn").addEventListener("click", downloadTemplate);
+ document.getElementById("resetPriceBtn").addEventListener("click", resetDefault);
+ document.getElementById("searchInput").addEventListener("input", debounce(handleSearch, 300));
+ document.getElementById("clearSearch").addEventListener("click", clearSearchInput);
+ document.getElementById("calcBtn").addEventListener("click", calculateQuote);
+ document.getElementById("resetBtn").addEventListener("click", resetAllSelect);
+ document.getElementById("exportBtn").addEventListener("click", exportQuote);
+ document.getElementById("adminEntry").addEventListener("click", () => {
+ if (admins.length === 0) {
+ document.getElementById("initOverlay").classList.add("active");
+ } else {
+ document.getElementById("loginOverlay").classList.add("active");
+ }
+ });
+ document.getElementById("loginBtn").addEventListener("click", () => {
+ const username = document.getElementById("adminUsername").value.trim();
+ const pwd = document.getElementById("adminPassword").value;
+ loginAdmin(username, pwd);
+ });
+ document.getElementById("initBtn").addEventListener("click", () => {
+ const username = document.getElementById("initUsername").value.trim();
+ const pwd = document.getElementById("initPassword").value;
+ const confirmPwd = document.getElementById("initConfirmPassword").value;
+ initializeFirstAdmin(username, pwd, confirmPwd);
+ });
+
+ document.querySelectorAll(".filter-tag").forEach(tag => {
+ tag.addEventListener("click", function() {
+ document.querySelectorAll(".filter-tag").forEach(t => t.classList.remove("active"));
+ this.classList.add("active");
+ currentSearchType = this.dataset.type;
+ handleSearch();
+ });
+ });
+
+ document.getElementById("adminTabs").addEventListener("click", (e) => {
+ if (e.target.classList.contains("admin-tab")) {
+ const tab = e.target.dataset.tab;
+ if (tab === "admins" && currentAdmin.role !== "super") {
+ alert("只有超级管理员可以管理其他管理员！");
+ return;
+ }
+ document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+ e.target.classList.add("active");
+ document.querySelectorAll(".admin-tab-content").forEach(c => c.classList.remove("active"));
+ document.getElementById(`tab-${tab}`).classList.add("active");
+ }
+ });
+
+ document.getElementById("colorPicker").addEventListener("click", (e) => {
+ if (e.target.classList.contains("color-option")) {
+ document.querySelectorAll(".color-option").forEach(c => c.classList.remove("selected"));
+ e.target.classList.add("selected");
+ selectedColor = e.target.dataset.color;
+ selectedColorName = e.target.dataset.name;
+ }
+ });
+ };
+
+ function loadFromStorage() {
+ try {
+ const savedData = localStorage.getItem("pathologyData_v2");
+ if (savedData) {
+ const data = JSON.parse(savedData);
+ originalData = data.originalData || JSON.parse(JSON.stringify(DEFAULT_DATA));
+ operationLogs = data.operationLogs || [];
+ customTags = data.customTags || [];
+ quickTags = data.quickTags || JSON.parse(JSON.stringify(DEFAULT_QUICK_TAGS));
+ admins = data.admins || [];
+ }
+ } catch (e) {
+ console.error("加载存储数据失败", e);
+ customTags = [];
+ quickTags = JSON.parse(JSON.stringify(DEFAULT_QUICK_TAGS));
+ admins = [];
+ }
+ }
+
+ function saveToStorage() {
+ const data = {
+ originalData: originalData,
+ operationLogs: operationLogs,
+ customTags: customTags,
+ quickTags: quickTags,
+ admins: admins
+ };
+ localStorage.setItem("pathologyData_v2", JSON.stringify(data));
+ }
+
+ function initializeFirstAdmin(username, password, confirmPassword) {
+ if (!username) { showError("initError", "请输入用户名"); return; }
+ if (!password) { showError("initError", "请输入密码"); return; }
+ if (password !== confirmPassword) { showError("initError", "两次密码不一致"); return; }
+
+ const newAdmin = { username, password, role: "super" };
+ admins.push(newAdmin);
+ saveToStorage();
+
+ alert(`✅ 超级管理员 "${username}" 创建成功！\n\n现在可以用这个账号登录了。`);
+ document.getElementById("initOverlay").classList.remove("active");
+ document.getElementById("initUsername").value = "";
+ document.getElementById("initPassword").value = "";
+ document.getElementById("initConfirmPassword").value = "";
+ document.getElementById("initError").style.display = "none";
+ }
+
+ function showError(elementId, message) {
+ const el = document.getElementById(elementId);
+ el.textContent = message;
+ el.style.display = "block";
+ }
+
+ function loginAdmin(username, password) {
+ const admin = admins.find(a => a.username === username && a.password === password);
+ if (admin) {
+ currentAdmin = admin;
+ document.getElementById("loginOverlay").classList.remove("active");
+ document.getElementById("adminOverlay").classList.add("active");
+ initAdminPanel();
+ addLog("管理员登录", `管理员 ${username} 登录成功`);
+ } else {
+ showError("loginError", "用户名或密码错误");
+ }
+ }
+
+ function closeAdmin() {
+ document.getElementById("loginOverlay").classList.remove("active");
+ document.getElementById("adminOverlay").classList.remove("active");
+ document.getElementById("adminUsername").value = "";
+ document.getElementById("adminPassword").value = "";
+ currentAdmin = null;
+ selectedForPriceUpdate.clear();
+ }
+
+ function initAdminPanel() {
+ renderPriceProductList();
+ renderCategoryOptions();
+ renderExistingCategories();
+ renderTags();
+ renderQuickTagsList();
+ renderAdminList();
+ renderLogs();
+ updateAdminUI();
+ }
+
+ function updateAdminUI() {
+ const info = document.getElementById("currentAdminInfo");
+ const badge = currentAdmin.role === "super" ? "超级管理员" : "普通管理员";
+ info.innerHTML = `当前登录: <strong>${currentAdmin.username}</strong> <span class="badge ${currentAdmin.role === 'super' ? 'badge-super' : 'badge-normal'}">${badge}</span>`;
+
+ const adminsTab = document.querySelector('[data-tab="admins"]');
+ if (currentAdmin.role !== "super") {
+ adminsTab.style.display = "none";
+ } else {
+ adminsTab.style.display = "block";
+ }
+ }
+
+ function renderPriceProductList() {
+ const container = document.getElementById("priceProductList");
+ if (originalData.length === 0) {
+ container.innerHTML = '<div class="empty-state">暂无产品数据</div>';
+ return;
+ }
+
+ const categoryMap = {};
+ originalData.forEach(item => {
+ if (!categoryMap[item.category]) categoryMap[item.category] = [];
+ categoryMap[item.category].push(item);
+ });
+
+ let html = "";
+ for (const [category, items] of Object.entries(categoryMap)) {
+ html += `<div style="margin-bottom: 20px;"><h4 style="margin-bottom: 10px; color: #3498db;">${category}</h4>`;
+ items.forEach(item => {
+ const isSelected = selectedForPriceUpdate.has(item.name);
+ html += `<div class="product-item">
+ <div class="checkbox-group">
+ <input type="checkbox" id="price_check_${item.name}" ${isSelected ? 'checked' : ''} onchange="togglePriceSelection('${item.name}')">
+ <label for="price_check_${item.name}">${item.name}</label>
+ </div>
+ <div style="font-size: 0.9rem; color: #666;">¥${item.price} / ${item.unit}</div>
+ </div>`;
+ });
+ html += '</div>';
+ }
+ container.innerHTML = html;
+ }
+
+ function togglePriceSelection(name) {
+ if (selectedForPriceUpdate.has(name)) {
+ selectedForPriceUpdate.delete(name);
+ } else {
+ selectedForPriceUpdate.add(name);
+ }
+ }
+
+ function batchUpdatePrice() {
+ const newPrice = parseFloat(document.getElementById("newPriceInput").value);
+ if (!newPrice || newPrice < 0) {
+ alert("请输入有效的价格！");
+ return;
+ }
+
+ if (selectedForPriceUpdate.size === 0) {
+ alert("请先选择要修改的产品！");
+ return;
+ }
+
+ let count = 0;
+ originalData.forEach(item => {
+ if (selectedForPriceUpdate.has(item.name)) {
+ item.price = newPrice;
+ count++;
+ }
+ });
+
+ saveToStorage();
+ renderServices(originalData);
+ renderPriceProductList();
+ addLog("批量修改价格", `管理员 ${currentAdmin.username} 修改了 ${count} 个产品的价格为 ¥${newPrice}`);
+ alert(`成功修改 ${count} 个产品的价格！`);
+ document.getElementById("newPriceInput").value = "";
+ selectedForPriceUpdate.clear();
+ }
+
+ function renderCategoryOptions() {
+ const select = document.getElementById("productCategory");
+ const categories = [...new Set(originalData.map(item => item.category))];
+ categories.sort();
+ select.innerHTML = '<option value="">请选择分类</option>' +
+ categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+ }
+
+ function renderExistingCategories() {
+ const container = document.getElementById("existingCategories");
+ const categories = [...new Set(originalData.map(item => item.category))];
+ categories.sort();
+ container.innerHTML = categories.map(cat => `<span style="display: inline-block; background: #e9ecef; padding: 4px 10px; margin: 3px; border-radius: 4px; font-size: 0.85rem;">${cat}</span>`).join('');
+ }
+
+ function addProduct() {
+ const category = document.getElementById("productCategory").value;
+ const name = document.getElementById("productName").value.trim();
+ const price = parseFloat(document.getElementById("productPrice").value);
+ const unit = document.getElementById("productUnit").value.trim();
+ const desc = document.getElementById("productDesc").value.trim();
+ const note = document.getElementById("productNote").value.trim();
+
+ if (!category) { alert("请选择服务分类！"); return; }
+ if (!name) { alert("请输入服务名称！"); return; }
+ if (!price || price < 0) { alert("请输入有效的价格！"); return; }
+ if (!unit) { alert("请输入单位！"); return; }
+ if (originalData.some(item => item.name === name)) { alert("该服务名称已存在！"); return; }
+
+ const newProduct = {
+ category, name, price, unit, desc, note,
+ isSlice: false, notAlone: false,
+ tags: []
+ };
+ originalData.push(newProduct);
+ saveToStorage();
+ renderServices(originalData);
+ renderPriceProductList();
+ renderCategoryOptions();
+ renderExistingCategories();
+ addLog("添加产品", `管理员 ${currentAdmin.username} 添加了新服务: ${name} (¥${price}/${unit})`);
+
+ document.getElementById("productCategory").value = "";
+ document.getElementById("productName").value = "";
+ document.getElementById("productPrice").value = "";
+ document.getElementById("productUnit").value = "";
+ document.getElementById("productDesc").value = "";
+ document.getElementById("productNote").value = "";
+
+ alert("添加成功！");
+ }
+
+ function addCategory() {
+ const categoryName = document.getElementById("newCategoryName").value.trim();
+ if (!categoryName) { alert("请输入分类名称！"); return; }
+ if (originalData.some(item => item.category === categoryName)) { alert("该分类已存在！"); return; }
+
+ addLog("添加分类", `管理员 ${currentAdmin.username} 添加了新分类: ${categoryName}`);
+ alert(`分类 "${categoryName}" 已添加！请在"添加产品"中使用该分类。`);
+ document.getElementById("newCategoryName").value = "";
+ renderExistingCategories();
+ }
+
+ function addCustomTag() {
+ const name = document.getElementById("newTagName").value.trim();
+ if (!name) { alert("请输入标记名称！"); return; }
+ if (customTags.some(t => t.name === name)) { alert("该标记名称已存在！"); return; }
+
+ const newTag = {
+ id: Date.now().toString(),
+ name: name,
+ color: selectedColor,
+ colorName: selectedColorName
+ };
+ customTags.push(newTag);
+ saveToStorage();
+ renderTags();
+ addLog("添加标记", `管理员 ${currentAdmin.username} 添加了新标记: ${name}`);
+ alert("标记添加成功！");
+ document.getElementById("newTagName").value = "";
+ }
+
+ function renderTags() {
+ const container = document.getElementById("tagList");
+ if (customTags.length === 0) {
+ container.innerHTML = '<div class="empty-state">暂无特殊标记</div>';
+ return;
+ }
+
+ container.innerHTML = customTags.map(tag => `
+ <div class="tag-item">
+ <span class="tag-name" style="background: ${tag.color}; color: white;">${tag.name}</span>
+ <button class="btn btn-sm btn-danger" onclick="deleteTag('${tag.id}')">删除</button>
+ </div>
+ `).join('');
+ }
+
+ function deleteTag(tagId) {
+ if (!confirm("确定删除该标记吗？")) return;
+
+ customTags = customTags.filter(t => t.id !== tagId);
+ saveToStorage();
+ renderTags();
+ addLog("删除标记", `管理员 ${currentAdmin.username} 删除了一个标记`);
+ }
+
+ function addQuickTag() {
+ const name = document.getElementById("quickTagName").value.trim();
+ const keywords = document.getElementById("quickTagKeywords").value.trim();
+ if (!name) { alert("请输入快捷标签名称！"); return; }
+ if (!keywords) { alert("请输入搜索关键词！"); return; }
+ if (quickTags.some(t => t.name === name)) { alert("该快捷标签名称已存在！"); return; }
+
+ const newTag = {
+ id: Date.now().toString(),
+ name: name,
+ keywords: keywords,
+ subCategories: []
+ };
+ quickTags.push(newTag);
+ saveToStorage();
+ renderQuickTagsList();
+ renderQuickTags();
+ addLog("添加快捷标签", `管理员 ${currentAdmin.username} 添加了快捷标签: ${name}`);
+ alert("快捷标签添加成功！");
+ document.getElementById("quickTagName").value = "";
+ document.getElementById("quickTagKeywords").value = "";
+ }
+
+ function renderQuickTagsList() {
+ const container = document.getElementById("quickTagList");
+ if (quickTags.length === 0) {
+ container.innerHTML = '<div class="empty-state">暂无快捷标签</div>';
+ return;
+ }
+
+ container.innerHTML = quickTags.map(tag => `
+ <div class="tag-item">
+ <div>
+ <div style="font-weight: 500; margin-bottom: 3px;">${tag.name}</div>
+ <div style="font-size: 0.8rem; color: #666;">关键词: ${tag.keywords}</div>
+ </div>
+ <button class="btn btn-sm btn-danger" onclick="deleteQuickTag('${tag.id}')">删除</button>
+ </div>
+ `).join('');
+ }
+
+ function deleteQuickTag(tagId) {
+ if (!confirm("确定删除该快捷标签吗？")) return;
+
+ quickTags = quickTags.filter(t => t.id !== tagId);
+ saveToStorage();
+ renderQuickTagsList();
+ renderQuickTags();
+ addLog("删除快捷标签", `管理员 ${currentAdmin.username} 删除了快捷标签`);
+ }
+
+ function renderQuickTags() {
+ const container = document.getElementById("quickQuoteTags");
+ container.innerHTML = quickTags.map(tag => {
+ const subTagsHtml = tag.subCategories && tag.subCategories.length > 0
+ ? `<div class="sub-tags">${tag.subCategories.map(sub => `<div class="sub-tag" data-keywords="${sub.keywords}">${sub.name}</div>`).join('')}</div>`
+ : '';
+ return `<div class="quick-tag" data-keywords="${tag.keywords}">${tag.name}${subTagsHtml}</div>`;
+ }).join('');
+
+ container.querySelectorAll(".quick-tag").forEach(tag => {
+ tag.addEventListener("click", function(e) {
+ if (e.target.classList.contains("sub-tag")) {
+ const keywords = e.target.dataset.keywords;
+ document.getElementById("searchInput").value = keywords;
+ currentSearchType = "all";
+ handleSearch();
+ } else if (!e.target.classList.contains("sub-tags")) {
+ const keywords = this.dataset.keywords;
+ document.getElementById("searchInput").value = keywords;
+ currentSearchType = "all";
+ handleSearch();
+ }
+ });
+ });
+
+ container.querySelectorAll(".sub-tag").forEach(tag => {
+ tag.addEventListener("click", function(e) {
+ e.stopPropagation();
+ const keywords = this.dataset.keywords;
+ document.getElementById("searchInput").value = keywords;
+ currentSearchType = "all";
+ handleSearch();
+ });
+ });
+ }
+
+ function addAdmin() {
+ if (currentAdmin.role !== "super") {
+ alert("只有超级管理员可以添加其他管理员！");
+ return;
+ }
+
+ const username = document.getElementById("newAdminName").value.trim();
+ const password = document.getElementById("newAdminPwd").value;
+ const role = document.getElementById("newAdminRole").value;
+
+ if (!username) { alert("请输入用户名！"); return; }
+ if (!password) { alert("请输入密码！"); return; }
+ if (admins.some(a => a.username === username)) { alert("该用户名已存在！"); return; }
+
+ const newAdmin = { username, password, role };
+ admins.push(newAdmin);
+ saveToStorage();
+ renderAdminList();
+ addLog("添加管理员", `超级管理员 ${currentAdmin.username} 添加了${role === "super" ? "超级管理员" : "普通管理员"}: ${username}`);
+ alert("管理员添加成功！");
+ document.getElementById("newAdminName").value = "";
+ document.getElementById("newAdminPwd").value = "";
+ }
+
+ function deleteAdmin(username) {
+ if (currentAdmin.role !== "super") {
+ alert("只有超级管理员可以删除管理员！");
+ return;
+ }
+
+ if (!confirm(`确定删除管理员 "${username}" 吗？`)) return;
+
+ admins = admins.filter(a => a.username !== username);
+ saveToStorage();
+ renderAdminList();
+ addLog("删除管理员", `超级管理员 ${currentAdmin.username} 删除了管理员: ${username}`);
+ }
+
+ function renderAdminList() {
+ const container = document.getElementById("adminList");
+ container.innerHTML = admins.map(admin => `
+ <div class="admin-item ${admin.role === "super" ? "super" : "normal"}">
+ <div class="admin-info">
+ <h4>${admin.username} <span class="badge ${admin.role === "super" ? "badge-super" : "badge-normal"}">${admin.role === "super" ? "超级管理员" : "普通管理员"}</span></h4>
+ <p>${admin.role === "super" ? "可管理所有功能和添加其他管理员" : "可管理价格、产品、分类、标记和快捷搜索"}</p>
+ </div>
+ <button class="btn btn-sm btn-danger" onclick="deleteAdmin('${admin.username}')">删除</button>
+ </div>
+ `).join('');
+ }
+
+ function addLog(action, detail) {
+ const log = {
+ time: new Date().toLocaleString(),
+ action: action,
+ detail: detail,
+ admin: currentAdmin ? currentAdmin.username : "系统"
+ };
+ operationLogs.unshift(log);
+ if (operationLogs.length > 100) {
+ operationLogs = operationLogs.slice(0, 100);
+ }
+ saveToStorage();
+ renderLogs();
+ }
+
+ function renderLogs() {
+ const container = document.getElementById("logList");
+ if (operationLogs.length === 0) {
+ container.innerHTML = '<div class="empty-state">暂无操作日志</div>';
+ return;
+ }
+ container.innerHTML = operationLogs.map(log => `
+ <div class="log-item">
+ <div class="log-time">${log.time}</div>
+ <div><span class="log-action">${log.action}</span> ${log.admin ? `(${log.admin})` : ""}: ${log.detail}</div>
+ </div>
+ `).join('');
+ }
+
+ function clearLogs() {
+ if (!confirm("确定要清空所有操作日志吗？")) return;
+ operationLogs = [];
+ saveToStorage();
+ renderLogs();
+ addLog("清空日志", "日志已清空");
+ alert("日志已清空！");
+ }
+
+ function exportLogs() {
+ if (operationLogs.length === 0) {
+ alert("暂无日志可导出！");
+ return;
+ }
+
+ let text = "病理检测报价系统 - 操作日志\n";
+ text += "导出时间: " + new Date().toLocaleString() + "\n";
+ text += "========================================\n\n";
+ operationLogs.forEach((log, index) => {
+ text += `${index + 1}. [${log.time}] ${log.admin || "系统"} - ${log.action}\n   ${log.detail}\n\n`;
+ });
+
+ const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement("a");
+ a.href = url;
+ a.download = `操作日志_${new Date().toISOString().slice(0,10)}.txt`;
+ a.click();
+ URL.revokeObjectURL(url);
+ addLog("导出日志", "导出了操作日志");
+ }
+
+ function debounce(func, delay) {
+ let timer = null;
+ return function() {
+ clearTimeout(timer);
+ timer = setTimeout(() => func.apply(this, arguments), delay);
+ };
+ }
+
+ function initSelectedQuantities() {
+ originalData.forEach(item => {
+ selectedQuantities[item.name] = 0;
+ });
+ }
+
+ function renderServices(data) {
+ const serviceContainer = document.getElementById("serviceContainer");
+ const noResult = document.getElementById("noResult");
+ serviceContainer.innerHTML = "";
+ if (data.length === 0) {
+ noResult.style.display = "block";
+ return;
+ }
+ noResult.style.display = "none";
+
+ const categoryMap = {};
+ data.forEach(item => {
+ if (!categoryMap[item.category]) categoryMap[item.category] = [];
+ categoryMap[item.category].push(item);
+ });
+
+ for (const [catName, items] of Object.entries(categoryMap)) {
+ const categoryDiv = document.createElement("div");
+ categoryDiv.className = "category-block";
+ let itemHtml = "";
+
+ items.forEach(item => {
+ const sliceTag = item.isSlice ? `<span class="slice-tag custom-tag">2片起切</span>` : "";
+ const notAloneTag = item.notAlone ? `<span class="not-alone-tag custom-tag">不单接</span>` : "";
+ const descHtml = item.desc ? `<div class="desc">${item.desc}</div>` : "";
+ const noteHtml = item.note ? `<div class="note">备注：${item.note}</div>` : "";
+
+ const storedQty = selectedQuantities[item.name] || 0;
+ const hasValueClass = storedQty > 0 ? "has-value" : "";
+ const isSlice = item.isSlice;
+ const price = parseFloat(item.price);
+ const actualQty = isSlice && storedQty < MIN_SLICE ? MIN_SLICE : storedQty;
+ const subtotal = (actualQty > 0) ? price * actualQty : 0;
+ const subtotalHtml = (storedQty > 0) ? `<div class="qty-subtotal">小计: ¥${subtotal.toFixed(2)}</div>` : '<div class="qty-subtotal">&nbsp;</div>';
+
+ itemHtml += `<tr><td>${item.name}${sliceTag}${notAloneTag}${descHtml}${noteHtml}</td><td class="price-red">${item.price}</td><td class="unit-green">${item.unit}</td>
+ <td><input type="number" min="0" class="qty-input ${item.isSlice ? 'slice-input' : ''} ${hasValueClass}" data-name="${item.name}" data-price="${item.price}" data-unit="${item.unit}" data-slice="${item.isSlice}" value="${storedQty}" placeholder="${item.isSlice ? '≥2' : '≥0'}">${subtotalHtml}</td></tr>`;
+ });
+
+ categoryDiv.innerHTML = `<div class="category-title">${catName}</div><div class="service-table-container"><table class="service-table"><thead><tr><th style="width: 40%;">服务名称</th><th style="width: 15%;">价格</th><th style="width: 15%;">单位</th><th style="width: 30%;">数量</th></tr></thead><tbody>${itemHtml}</tbody></table></div>`;
+ serviceContainer.appendChild(categoryDiv);
+ }
+ bindQtyInputEvents();
+ }
+
+ function updateSearchStats(count) {
+ let statsText = `共 ${count} 个检测项目`;
+ if (lastSearchKeyword) {
+ statsText = `搜索「${lastSearchKeyword}」找到 ${count} 个结果`;
+ }
+ document.getElementById("searchStats").textContent = statsText;
+ document.getElementById("clearSearch").classList.toggle("active", !!lastSearchKeyword);
+ }
+
+ function clearSearchInput() {
+ document.getElementById("searchInput").value = "";
+ lastSearchKeyword = "";
+ handleSearch();
+ }
+
+ function bindQtyInputEvents() {
+ document.querySelectorAll(".qty-input").forEach(input => {
+ input.addEventListener("input", function() {
+ const serviceName = this.dataset.name;
+ const inputQty = parseInt(this.value) || 0;
+ const price = parseFloat(this.dataset.price);
+ const isSlice = this.dataset.slice === 'true';
+ selectedQuantities[serviceName] = inputQty;
+ this.classList.toggle("has-value", inputQty > 0);
+ const actualQty = isSlice && inputQty < MIN_SLICE ? MIN_SLICE : inputQty;
+ const subtotal = (actualQty > 0) ? price * actualQty : 0;
+ const subtotalEl = this.parentNode.querySelector('.qty-subtotal');
+ if(subtotalEl) {
+ subtotalEl.innerHTML = (inputQty > 0) ? `小计: ¥${subtotal.toFixed(2)}` : '&nbsp;';
+ if (isSlice && inputQty > 0 && inputQty < MIN_SLICE) {
+ subtotalEl.innerHTML += ` (按2片计)`;
+ }
+ }
+ updateSelectedTip();
+ });
+ });
+ }
+
+ function handleSearch() {
+ lastSearchKeyword = document.getElementById("searchInput").value.trim().toLowerCase();
+ let filteredData = [];
+ if (!lastSearchKeyword) {
+ filteredData = originalData;
+ } else {
+ filteredData = originalData.filter(item => {
+ switch(currentSearchType) {
+ case "name":
+ return item.name.toLowerCase().includes(lastSearchKeyword);
+ case "category":
+ return item.category.toLowerCase().includes(lastSearchKeyword);
+ case "price":
+ return item.price.toString().includes(lastSearchKeyword);
+ case "desc":
+ return item.desc.toLowerCase().includes(lastSearchKeyword) || item.note.toLowerCase().includes(lastSearchKeyword);
+ default:
+ return item.category.toLowerCase().includes(lastSearchKeyword) ||
+ item.name.toLowerCase().includes(lastSearchKeyword) ||
+ item.price.toString().includes(lastSearchKeyword) ||
+ item.unit.toLowerCase().includes(lastSearchKeyword) ||
+ item.desc.toLowerCase().includes(lastSearchKeyword) ||
+ item.note.toLowerCase().includes(lastSearchKeyword);
+ }
+ });
+ }
+ updateSearchStats(filteredData.length);
+ renderServices(filteredData);
+ }
+
+ function updateSelectedTip() {
+ const count = Object.values(selectedQuantities).filter(qty => qty > 0).length;
+ document.getElementById("selectedCount").textContent = count;
+ document.getElementById("selectedTip").classList.toggle("active", count > 0);
+ }
+
+ function parseExcel(e) {
+ const file = e.target.files[0];
+ if (!file) return;
+ if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
+ alert("请选择.xlsx或.xls格式文件！");
+ return;
+ }
+
+ const reader = new FileReader();
+ reader.onload = function(e) {
+ try {
+ const data = new Uint8Array(e.target.result);
+ const workbook = XLSX.read(data, { type: "array" });
+ const firstSheet = workbook.SheetNames[0];
+ const worksheet = workbook.Sheets[firstSheet];
+ const excelData = XLSX.utils.sheet_to_json(worksheet);
+
+ const requiredKeys = ["服务分类", "服务名称", "价格（元）", "单位"];
+ const isValid = excelData.every(item => requiredKeys.every(key => item.hasOwnProperty(key)));
+ if (!isValid) throw new Error("需包含【服务分类、服务名称、价格（元）、单位】列");
+
+ const formattedData = excelData.map(item => {
+ const name = (item["服务名称"] || "").trim();
+ const serviceName = name.replace("【2片起切】", "").trim();
+ const storedQty = selectedQuantities[serviceName] || 0;
+ selectedQuantities[serviceName] = storedQty;
+
+ return {
+ category: (item["服务分类"] || "未分类").trim(),
+ name: serviceName,
+ price: parseFloat(item["价格（元）"]) || 0,
+ unit: (item["单位"] || "").trim(),
+ desc: (item["内容/应用"] || "").trim(),
+ note: (item["备注"] || "").trim(),
+ isSlice: name.includes("【2片起切】"),
+ notAlone: (item["样本数量"] || "").trim() === "不单接",
+ tags: []
+ };
+ }).filter(item => item.name && item.price > 0);
+
+ const uniqueData = [];
+ const nameSet = new Set();
+ formattedData.forEach(item => {
+ if (!nameSet.has(item.name)) {
+ nameSet.add(item.name);
+ uniqueData.push(item);
+ }
+ });
+
+ originalData = uniqueData;
+ saveToStorage();
+ renderServices(originalData);
+ updateSelectedTip();
+ updateSearchStats(uniqueData.length);
+ addLog("上传Excel", `管理员 ${currentAdmin ? currentAdmin.username : "系统"} 从Excel导入 ${uniqueData.length} 个产品`);
+ alert(`解析成功！加载${uniqueData.length}个项目`);
+ } catch (err) {
+ alert(`解析失败：${err.message}`);
+ } finally {
+ document.getElementById("fileInput").value = "";
+ }
+ };
+ reader.readAsArrayBuffer(file);
+ }
+
+ function calculateQuote() {
+ const selectedItems = [];
+ let grandTotal = 0;
+ let totalBilledQty = 0;
+
+ originalData.forEach(item => {
+ const inputQty = selectedQuantities[item.name] || 0;
+ if (inputQty <= 0) return;
+
+ const isSlice = item.isSlice;
+ const price = parseFloat(item.price);
+ const actualQty = isSlice && inputQty < MIN_SLICE ? MIN_SLICE : inputQty;
+ const itemTotal = price * actualQty;
+
+ selectedItems.push({
+ name: item.name,
+ price: price,
+ unit: item.unit,
+ inputQty: inputQty,
+ actualQty: actualQty,
+ itemTotal: itemTotal,
+ isSlice: isSlice,
+ category: item.category,
+ desc: item.desc,
+ note: item.note
+ });
+ grandTotal += itemTotal;
+ totalBilledQty += actualQty;
+ });
+
+ const resultList = document.getElementById("resultList");
+ const detailList = document.getElementById("detailList");
+ const itemCount = document.getElementById("itemCount");
+ const totalQty = document.getElementById("totalQty");
+ const totalAmount = document.getElementById("totalAmount");
+ const quoteDetails = document.getElementById("quoteDetails");
+
+ if (selectedItems.length === 0) {
+ resultList.innerHTML = `<div class="result-item"><span class="result-name">请选择项目并计算</span><span class="result-amount">-</span></div>`;
+ detailList.innerHTML = "";
+ itemCount.textContent = "0 项";
+ totalQty.textContent = "0";
+ totalAmount.textContent = "¥0.00";
+ return;
+ }
+
+ let detailHtml = `<div class="detail-header">已选项目 (${selectedItems.length}项)：</div>`;
+ selectedItems.forEach((item, index) => {
+ const calcInfo = item.isSlice && item.inputQty < MIN_SLICE ?
+ `计算: ${item.inputQty}${item.unit} → 2${item.unit} × ${item.price}元` :
+ `计算: ${item.actualQty}${item.unit} × ${item.price}元`;
+
+ detailHtml += `
+ <div class="detail-item">
+ <div class="detail-header">
+ <span>${index+1}. ${item.name} <span class="detail-qty">(${item.inputQty}${item.unit})</span></span>
+ <span class="detail-total">¥${item.itemTotal.toFixed(2)}</span>
+ </div>
+ <div class="detail-calc">${calcInfo} = ¥${item.itemTotal.toFixed(2)}</div>
+ </div>`;
+ });
+ detailList.innerHTML = detailHtml;
+
+ itemCount.textContent = `${selectedItems.length} 项`;
+ totalQty.textContent = `${totalBilledQty}`;
+ totalAmount.textContent = `¥${grandTotal.toFixed(2)}`;
+
+ let detailText = `病理检测报价单
+===================
+生成时间: ${new Date().toLocaleString()}
+
+【选中检测项目明细 (${selectedItems.length}项)】
+`;
+ selectedItems.forEach((item, index) => {
+ const qtyText = item.isSlice && item.inputQty < MIN_SLICE
+ ? `${item.actualQty}${item.unit}（输入${item.inputQty}${item.unit}，按2片起切）`
+ : `${item.actualQty}${item.unit}`;
+ detailText += `${index+1}. ${item.name}
+ - 单价: ${item.price}元/${item.unit}
+ - 数量: ${qtyText}
+ - 小计: ¥${item.itemTotal.toFixed(2)}\n`;
+ });
+ detailText += `
+【费用统计】
+- 项目数量: ${selectedItems.length} 项
+- 计费总数量: ${totalBilledQty}
+- 总计金额: ¥${grandTotal.toFixed(2)}
+
+【备注】
+1. 本报价基于"样本质量合格"前提
+2. 标准检测周期：常规3-7个工作日
+3. 报价有效期7天，实际费用以最终确认为准`;
+ quoteDetails.textContent = detailText;
+ }
+
+ function resetAllSelect() {
+ originalData.forEach(item => {
+ selectedQuantities[item.name] = 0;
+ });
+ renderServices(originalData);
+ updateSelectedTip();
+ document.getElementById("resultList").innerHTML = `<div class="result-item"><span class="result-name">请选择项目并计算</span><span class="result-amount">-</span></div>`;
+ document.getElementById("detailList").innerHTML = "";
+ document.getElementById("itemCount").textContent = "0 项";
+ document.getElementById("totalQty").textContent = "0";
+ document.getElementById("totalAmount").textContent = "¥0.00";
+ }
+
+ function resetDefault() {
+ originalData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+ saveToStorage();
+ initSelectedQuantities();
+ renderServices(originalData);
+ document.getElementById("searchInput").value = "";
+ lastSearchKeyword = "";
+ updateSearchStats(originalData.length);
+ updateSelectedTip();
+ addLog("恢复默认", `管理员 ${currentAdmin ? currentAdmin.username : "系统"} 恢复为系统默认价格表`);
+ alert("已恢复默认价格体系");
+ }
+
+ function downloadTemplate() {
+ const template = originalData.map(item => ({
+ "服务分类": item.category,
+ "服务名称": item.name + (item.isSlice ? "【2片起切】" : ""),
+ "价格（元）": item.price,
+ "单位": item.unit,
+ "样本数量": item.notAlone ? "不单接" : "",
+ "内容/应用": item.desc,
+ "备注": item.note
+ }));
+ const wb = XLSX.utils.book_new();
+ const ws = XLSX.utils.json_to_sheet(template);
+ XLSX.utils.book_append_sheet(wb, ws, "病理检测价格表");
+ XLSX.writeFile(wb, "病理检测价格表模板.xlsx");
+ }
+
+ function exportQuote() {
+ const selectedItems = [];
+ let grandTotal = 0;
+ let totalBilledQty = 0;
+
+ originalData.forEach(item => {
+ const inputQty = selectedQuantities[item.name] || 0;
+ if (inputQty <= 0) return;
+
+ const isSlice = item.isSlice;
+ const price = parseFloat(item.price);
+ const actualQty = isSlice && inputQty < MIN_SLICE ? MIN_SLICE : inputQty;
+ const itemTotal = price * actualQty;
+
+ selectedItems.push({
+ "服务分类": item.category,
+ "服务名称": item.name,
+ "单价(元)": price,
+ "输入数量": inputQty,
+ "计费数量": actualQty,
+ "小计(元)": itemTotal.toFixed(2),
+ "备注": isSlice ? "2片起切" : (item.notAlone ? "不单接" : "")
+ });
+ grandTotal += itemTotal;
+ totalBilledQty += actualQty;
+ });
+
+ if (selectedItems.length === 0) {
+ alert("请先选择检测项目并计算报价！");
+ return;
+ }
+
+ selectedItems.push({
+ "服务分类": "=== 费用汇总 ===",
+ "服务名称": "",
+ "单价(元)": "",
+ "输入数量": "",
+ "计费数量": "",
+ "小计(元)": "",
+ "备注": ""
+ });
+
+ selectedItems.push({
+ "服务分类": "统计",
+ "服务名称": "项目数量",
+ "单价(元)": "",
+ "输入数量": selectedItems.length - 2,
+ "计费数量": "",
+ "小计(元)": "",
+ "备注": "项"
+ });
+
+ selectedItems.push({
+ "服务分类": "总计",
+ "服务名称": "总计金额",
+ "单价(元)": "",
+ "输入数量": "",
+ "计费数量": "",
+ "小计(元)": grandTotal.toFixed(2),
+ "备注": "元"
+ });
+
+ const wb = XLSX.utils.book_new();
+ const ws = XLSX.utils.json_to_sheet(selectedItems);
+ XLSX.utils.book_append_sheet(wb, ws, "病理检测报价单");
+ const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+ XLSX.writeFile(wb, `病理检测报价单_${timestamp}.xlsx`);
+ addLog("导出报价单", `管理员 ${currentAdmin ? currentAdmin.username : "系统"} 导出了报价单 Excel 文件`);
+ }
+ </script>
+</body>
+</html>
