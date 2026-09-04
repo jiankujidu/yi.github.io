@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RT‑qPCR报价计算器</title>
+<style>
+*{box-sizing:border-box;font-family:"Microsoft Yahei",system-ui, sans-serif;margin:0;padding:0;}
+body{background:#f5f7fa;padding:24px;max-width:750px;margin:0 auto;}
+.wrap{background:#ffffff;padding:26px;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,0.1);}
+h2{text-align:center;margin-bottom:22px;color:#222;font-size:20px;}
+.form-item{margin-bottom:18px;}
+label{display:block;margin-bottom:6px;color:#333;font-size:15px;}
+input{width:100%;padding:12px 14px;border:1px solid #ccd2db;border-radius:8px;font-size:16px;}
+.result-box{margin-top:24px;padding:22px;background:#f7f9fc;border-radius:10px;font-family:Consolas,Monospace;font-size:16px;line-height:2.2;}
+.total-row{font-weight:bold;color:#c82423;font-size:17px;margin-top:6px;}
+
+.copy-area{margin-top:24px;}
+textarea{width:100%;min-height:240px;padding:14px;border:1px solid #ddd;border-radius:8px;font-size:15px;resize:none;white-space:pre-wrap;font-family:Consolas,Monospace;}
+.btn{margin-top:12px;padding:11px 20px;background:#2b7bdd;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;}
+.btn:active{background:#2062b4;}
+.tip{font-size:12px;color:#999;margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h2>RT‑qPCR报价计算器</h2>
+
+<div class="form-item">
+<label>目的基因数量（不含内参）</label>
+<input type="number" min="0" id="geneNum" placeholder="例如：5">
+</div>
+<div class="form-item">
+<label>样本数量</label>
+<input type="number" min="0" id="sampleNum" placeholder="例如：10">
+</div>
+
+<div class="result-box" id="showResult"></div>
+
+<div class="copy-area">
+<label>📋复制报价文本（直接发给客户）</label>
+<textarea id="copyText" readonly></textarea>
+<button class="btn" id="copyBtn">一键复制</button>
+<div class="tip">复制后直接粘贴微信/聊天框</div>
+</div>
+
+</div>
+
+<script>
+const geneInput = document.getElementById('geneNum');
+const sampleInput = document.getElementById('sampleNum');
+const showResult = document.getElementById('showResult');
+const copyText = document.getElementById('copyText');
+const copyBtn = document.getElementById('copyBtn');
+
+function calc(){
+    const g = Number(geneInput.value) || 0;
+    const s = Number(sampleInput.value) || 0;
+
+    const pricePrimer = g * 85;
+    const priceRnaRt = s * 70;
+    const qpcrTotalGene = g + 1;
+    const priceQpcr = s * qpcrTotalGene * 70;
+    const sumTotal = pricePrimer + priceRnaRt + priceQpcr;
+
+    showResult.innerHTML = `
+<div>目的基因数量：${g}个</div>
+<div>样本数量：${s}份</div>
+<br/>
+<div>引物合成：${g}*85=${pricePrimer}</div>
+<div>RNA提取及逆转录：70*${s}=${priceRnaRt}</div>
+<div>QPCR检测：${s}*${qpcrTotalGene}*70=${priceQpcr}</div>
+<div class="total-row">总金额：${pricePrimer}+${priceRnaRt}+${priceQpcr}=${sumTotal}</div>
+`;
+
+    const outputText = `目的基因数量：${g}个
+样本数量：${s}份
+
+引物合成：${g}*85=${pricePrimer}
+RNA提取及逆转录：70*${s}=${priceRnaRt}
+QPCR检测：${s}*${qpcrTotalGene}*70=${priceQpcr}
+总金额：${pricePrimer}+${priceRnaRt}+${priceQpcr}=${sumTotal}
+
+备注：
+①报价包含引物合成、样本RNA提取、逆转录、qPCR检测；
+②内参基因不计入引物合成数量；
+③不含样本寄送运费，样本请干冰/冰袋低温寄送。`;
+
+    copyText.value = outputText;
+}
+
+async function handleCopy(){
+    try {
+        await navigator.clipboard.writeText(copyText.value);
+        alert("✅报价复制成功，可以直接粘贴");
+    } catch(err) {
+        copyText.select();
+        document.execCommand('copy');
+        alert("⚠️浏览器限制，请手动Ctrl+C复制");
+    }
+}
+
+geneInput.addEventListener('input',calc);
+sampleInput.addEventListener('input',calc);
+copyBtn.addEventListener('click',handleCopy);
+calc();
+</script>
+</body>
+</html>
