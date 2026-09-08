@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RT‑qPCR报价计算器</title>
+<style>
+*{box-sizing:border-box;font-family:"Microsoft YaHei",system-ui,sans-serif;margin:0;padding:0;}
+body{background:#f5f7fa;padding:24px;max-width:760px;margin:0 auto;}
+.wrap{background:#fff;padding:26px;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,0.1);}
+h2{text-align:center;margin-bottom:20px;color:#222;font-size:20px;}
+.form-item{margin-bottom:18px;}
+label{display:block;margin-bottom:6px;color:#333;font-size:15px;}
+input{width:100%;padding:12px 14px;border:1px solid #ccd2db;border-radius:8px;font-size:16px;}
+.result-box{margin-top:22px;padding:20px;background:#f7f9fc;border-radius:10px;font-family:Consolas,Monospace;font-size:16px;line-height:2.1;}
+.total-row{font-weight:bold;color:#c82423;font-size:17px;margin-top:6px;}
+.copy-area{margin-top:22px;}
+textarea{width:100%;min-height:200px;padding:14px;border:1px solid #ddd;border-radius:8px;font-size:15px;resize:none;white-space:pre-wrap;font-family:Consolas,Monospace;}
+.btn-row{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;}
+.btn{padding:11px 20px;background:#2b7bdd;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;}
+.btn.green{background:#16a34a;}
+.btn:active{opacity:0.85;}
+.tip{font-size:12px;color:#999;margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h2>RT‑qPCR报价计算器</h2>
+
+<div class="form-item">
+<label>目的基因数量（不含内参）</label>
+<input type="number" min="0" id="geneNum" placeholder="例如：5">
+</div>
+<div class="form-item">
+<label>样本数量</label>
+<input type="number" min="0" id="sampleNum" placeholder="例如：5">
+</div>
+
+<div class="result-box" id="showResult"></div>
+
+<div class="copy-area">
+<label>📋 复制报价文本（直接发给客户）</label>
+<textarea id="copyText" readonly></textarea>
+<div class="btn-row">
+<button class="btn" id="copyBtn">📋 一键复制</button>
+<button class="btn green" id="excelBtn">📊 导出Excel（同模板格式）</button>
+</div>
+<div class="tip">导出Excel与模板一致：标题/备注合并、细边框、宋体、列宽、金额数值均相同</div>
+</div>
+</div>
+
+<script>
+const geneInput=document.getElementById('geneNum');
+const sampleInput=document.getElementById('sampleNum');
+const showResult=document.getElementById('showResult');
+const copyText=document.getElementById('copyText');
+const copyBtn=document.getElementById('copyBtn');
+const excelBtn=document.getElementById('excelBtn');
+
+function calc(){
+    const g=Number(geneInput.value)||0;
+    const s=Number(sampleInput.value)||0;
+    const a=g*85, b=s*70, qg=g+1, c=s*qg*70, sum=a+b+c;
+
+    showResult.innerHTML=`
+<div>目的基因数量：${g}个</div>
+<div>样本数量：${s}份</div><br/>
+<div>引物合成：${g}*85=${a}</div>
+<div>RNA提取及逆转录：70*${s}=${b}</div>
+<div>QPCR检测：${s}*${qg}*70=${c}</div>
+<div class="total-row">总金额：${a}+${b}+${c}=${sum}</div>`;
+
+    copyText.value=`目的基因数量：${g}个
+样本数量：${s}份
+
+引物合成：${g}*85=${a}
+RNA提取及逆转录：70*${s}=${b}
+QPCR检测：${s}*${qg}*70=${c}
+总金额：${a}+${b}+${c}=${sum}
+
+备注：
+①报价包含引物合成、样本RNA提取、逆转录、qPCR检测；
+②内参基因不计入引物合成数量；
+③不含样本寄送运费，样本请干冰/冰袋低温寄送。`;
+}
+
+async function handleCopy(){
+    try{ await navigator.clipboard.writeText(copyText.value); alert("✅报价复制成功"); }
+    catch(e){ copyText.select(); document.execCommand('copy'); alert("⚠️请手动Ctrl+C复制"); }
+}
+
+/* ================= 导出Excel：完全复刻模板格式 =================
+   结构：sheet"RT-qPCR报价"，合并A1:D1与A12:D14，宋体12，thin细边框，
+   列宽 A=22.83 B=52.63 C=22.83 D=12.83，金额为数值 */
+function buildXlsx(g, s){
+    const a=g*85, b=s*70, qg=g+1, c=s*qg*70, sum=a+b+c;
+
+    // 文本（sharedStrings）
+    const texts=[
+        "RT‑qPCR实验项目报价", "项目","内容","计算","金额(元)",
+        "目的基因数量", g+"个", "-", "样本数量", s+"份",
+        "引物合成", g+"个目的基因", g+"×85",
+        "RNA提取及逆转录", s+"份样本", "70×"+s,
+        "QPCR检测(含1内参)", s+"×"+qg+"×70",
+        "总金额", a+"+"+b+"+"+c,
+        "备注1 报价包含引物合成、样本RNA提取、逆转录、qPCR检测\n备注2 内参基因不计入引物合成数量\n备注3 不含样本寄送运费，样本请干冰/冰袋低温寄送"
+    ];
+    const idx={}; texts.forEach((t,i)=>idx[t]=i);
+    const sid=t=>`<c r="${t}" t="s"><v>${idx[texts.find(x=>x===t)]}</v></c>`;
+
+    const empty=r=>`<c r="${r}" s="1"/>`;
+
+    const sheetXml =
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<cols><col min="1" max="1" width="22.8333333333333" customWidth="1"/><col min="2" max="2" width="52.625" customWidth="1"/><col min="3" max="3" width="22.8333333333333" customWidth="1"/><col min="4" max="4" width="12.8333333333333" customWidth="1"/></cols>
+<sheetData>
+<row r="1"><c r="A1" s="2" t="s"><v>0</v></c><c r="B1" s="3"/><c r="C1" s="3"/><c r="D1" s="4"/></row>
+<row r="2"><c r="A2" s="1"/><c r="B2" s="1"/><c r="C2" s="1"/><c r="D2" s="1"/></row>
+<row r="3"><c r="A3" s="1" t="s"><v>1</v></c><c r="B3" s="1" t="s"><v>2</v></c><c r="C3" s="1" t="s"><v>3</v></c><c r="D3" s="1" t="s"><v>4</v></c></row>
+<row r="4"><c r="A4" s="1" t="s"><v>5</v></c><c r="B4" s="1" t="s"><v>6</v></c><c r="C4" s="1" t="s"><v>7</v></c><c r="D4" s="1"/></row>
+<row r="5"><c r="A5" s="1" t="s"><v>8</v></c><c r="B5" s="1" t="s"><v>9</v></c><c r="C5" s="1" t="s"><v>7</v></c><c r="D5" s="1"/></row>
+<row r="6"><c r="A6" s="1"/><c r="B6" s="1"/><c r="C6" s="1"/><c r="D6" s="1"/></row>
+<row r="7"><c r="A7" s="1" t="s"><v>10</v></c><c r="B7" s="1" t="s"><v>11</v></c><c r="C7" s="1" t="s"><v>12</v></c><c r="D7" s="1"><v>${a}</v></c></row>
+<row r="8"><c r="A8" s="1" t="s"><v>13</v></c><c r="B8" s="1" t="s"><v>14</v></c><c r="C8" s="1" t="s"><v>15</v></c><c r="D8" s="1"><v>${b}</v></c></row>
+<row r="9"><c r="A9" s="1" t="s"><v>16</v></c><c r="B9" s="1"/><c r="C9" s="1" t="s"><v>17</v></c><c r="D9" s="1"><v>${c}</v></c></row>
+<row r="10"><c r="A10" s="1" t="s"><v>18</v></c><c r="B10" s="1"/><c r="C10" s="1" t="s"><v>19</v></c><c r="D10" s="1"><v>${sum}</v></c></row>
+<row r="11"><c r="A11" s="1"/><c r="B11" s="1"/><c r="C11" s="1"/><c r="D11" s="1"/></row>
+<row r="12"><c r="A12" s="5" t="s"><v>20</v></c><c r="B12" s="6"/><c r="C12" s="6"/><c r="D12" s="7"/></row>
+<row r="13"><c r="A13" s="8"/><c r="B13" s="13"/><c r="C13" s="13"/><c r="D13" s="9"/></row>
+<row r="14"><c r="A14" s="10"/><c r="B14" s="11"/><c r="C14" s="11"/><c r="D14" s="12"/></row>
+</sheetData>
+<mergeCells count="2"><mergeCell ref="A1:D1"/><mergeCell ref="A12:D14"/></mergeCells>
+</worksheet>`;
+
+    const ss = texts.map(t=>`<si><t xml:space="preserve">${t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</t></si>`).join("");
+
+    const files={
+      "[Content_Types].xml":
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/></Types>`,
+      "_rels/.rels":
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
+      "xl/workbook.xml":
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="RT-qPCR报价" sheetId="1" r:id="rId1"/></sheets></workbook>`,
+      "xl/_rels/workbook.xml.rels":
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/></Relationships>`,
+      "xl/styles.xml":
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<fonts count="1"><font><sz val="12"/><name val="宋体"/></font></fonts>
+<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>
+<borders count="11">
+<border><left/><right/><top/><bottom/><diagonal/></border>
+<border><left style="thin"><color rgb="FF000000"/></left><right style="thin"><color rgb="FF000000"/></right><top style="thin"><color rgb="FF000000"/></top><bottom style="thin"><color rgb="FF000000"/></bottom><diagonal/></border>
+<border><top style="thin"><color rgb="FF000000"/></top><bottom style="thin"><color rgb="FF000000"/></bottom><left/><right/><diagonal/></border>
+<border><right style="thin"><color rgb="FF000000"/></right><top style="thin"><color rgb="FF000000"/></top><bottom style="thin"><color rgb="FF000000"/></bottom><left/><diagonal/></border>
+<border><top style="thin"><color rgb="FF000000"/></top><left/><right/><bottom/><diagonal/></border>
+<border><right style="thin"><color rgb="FF000000"/></right><top style="thin"><color rgb="FF000000"/></top><left/><bottom/><diagonal/></border>
+<border><left style="thin"><color rgb="FF000000"/></left><right/><top/><bottom/><diagonal/></border>
+<border><right style="thin"><color rgb="FF000000"/></right><left/><top/><bottom/><diagonal/></border>
+<border><left style="thin"><color rgb="FF000000"/></left><bottom style="thin"><color rgb="FF000000"/></bottom><right/><top/><diagonal/></border>
+<border><bottom style="thin"><color rgb="FF000000"/></bottom><left/><right/><top/><diagonal/></border>
+<border><right style="thin"><color rgb="FF000000"/></right><bottom style="thin"><color rgb="FF000000"/></bottom><left/><top/><diagonal/></border>
+</borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="14">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="2" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="3" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="4" xfId="0" applyBorder="1" applyAlignment="1"><alignment wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="5" xfId="0" applyBorder="1" applyAlignment="1"><alignment wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="6" xfId="0" applyBorder="1" applyAlignment="1"><alignment wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="7" xfId="0" applyBorder="1" applyAlignment="1"><alignment wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="8" xfId="0" applyBorder="1" applyAlignment="1"><alignment wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="9" xfId="0" applyBorder="1" applyAlignment="1"><alignment wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="10" xfId="0" applyBorder="1" applyAlignment="1"><alignment wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment wrapText="1"/></xf>
+</cellXfs>
+</styleSheet>`,
+      "xl/sharedStrings.xml":
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${texts.length}" uniqueCount="${texts.length}">${ss}</sst>`,
+      "xl/worksheets/sheet1.xml": sheetXml
+    };
+
+    return makeZip(files);
+}
+
+/* ---------- 手写 ZIP（store 无压缩）+ CRC32 ---------- */
+function crc32(bytes){
+    let c, crc=0xFFFFFFFF;
+    for(let i=0;i<bytes.length;i++){
+        c=(crc^bytes[i])&0xFF;
+        for(let k=0;k<8;k++) c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);
+        crc=(crc>>>8)^c;
+    }
+    return (crc^0xFFFFFFFF)>>>0;
+}
+function utf8(str){ return new TextEncoder().encode(str); }
+function u32(n){ const b=new Uint8Array(4); new DataView(b.buffer).setUint32(0,n,true); return b; }
+function makeZip(fileMap){
+    const names=Object.keys(fileMap);
+    const parts=[], centrals=[];
+    let offset=0;
+    names.forEach(name=>{
+        const nameB=utf8(name), data=utf8(fileMap[name]);
+        const crc=crc32(data);
+        const lh=new Uint8Array(30);
+        const dv=new DataView(lh.buffer);
+        dv.setUint32(0,0x04034b50,true); dv.setUint16(4,20,true); dv.setUint16(6,0,true);
+        dv.setUint16(8,0,true); dv.setUint16(10,0,true); dv.setUint16(12,0,true);
+        dv.setUint32(14,crc,true); dv.setUint32(18,data.length,true); dv.setUint32(22,data.length,true);
+        dv.setUint16(26,nameB.length,true); dv.setUint16(28,0,true);
+        parts.push(lh,nameB,data);
+        const ch=new Uint8Array(46);
+        const dv2=new DataView(ch.buffer);
+        dv2.setUint32(0,0x02014b50,true); dv2.setUint16(4,20,true); dv2.setUint16(6,20,true);
+        dv2.setUint16(8,0,true); dv2.setUint16(10,0,true); dv2.setUint16(12,0,true); dv2.setUint16(14,0,true);
+        dv2.setUint32(16,crc,true); dv2.setUint32(20,data.length,true); dv2.setUint32(24,data.length,true);
+        dv2.setUint16(28,nameB.length,true); dv2.setUint16(30,0,true); dv2.setUint16(32,0,true);
+        dv2.setUint16(34,0,true); dv2.setUint16(36,0,true); dv2.setUint32(42,offset,true);
+        centrals.push(ch,nameB);
+        offset += lh.length+nameB.length+data.length;
+    });
+    const cdStart=offset;
+    let cdLen=0;
+    centrals.forEach(p=>cdLen+=p.length);
+    const eocd=new Uint8Array(22);
+    const dv3=new DataView(eocd.buffer);
+    dv3.setUint32(0,0x06054b50,true); dv3.setUint16(8,names.length,true); dv3.setUint16(10,names.length,true);
+    dv3.setUint32(12,cdLen,true); dv3.setUint32(16,cdStart,true); dv3.setUint16(20,0,true);
+    const total=parts.concat(centrals,[eocd]);
+    let len=0; total.forEach(p=>len+=p.length);
+    const out=new Uint8Array(len); let pos=0;
+    total.forEach(p=>{ out.set(p,pos); pos+=p.length; });
+    return out;
+}
+
+function exportExcel(){
+    const g=Number(geneInput.value)||0;
+    const s=Number(sampleInput.value)||0;
+    const bytes=buildXlsx(g,s);
+    const blob=new Blob([bytes],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download="RT-qPCR报价_"+g+"基因_"+s+"样本.xlsx";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    alert("✅Excel已导出，格式与模板一致");
+}
+
+copyBtn.addEventListener('click',handleCopy);
+excelBtn.addEventListener('click',exportExcel);
+geneInput.addEventListener('input',calc);
+sampleInput.addEventListener('input',calc);
+calc();
+</script>
+</body>
+</html>

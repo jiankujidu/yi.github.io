@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>WB蛋白检测报价计算器</title>
+<style>
+*{box-sizing:border-box;font-family:system-ui, sans-serif;margin:0;padding:0}
+body{background:#f5f7fa;padding:14px;color:#222}
+.box{max-width:100%;margin:0 auto;background:#fff;padding:18px;border-radius:12px;box-shadow:0 2px 12px #00000015}
+h2{text-align:center;margin-bottom:18px;color:#1f2937;font-size:18px}
+.row{margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+label{width:110px;font-weight:500;font-size:15px}
+input[type="number"]{flex:1;min-width:100px;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-size:16px}
+.check-row{margin:14px 0;display:flex;align-items:flex-start;gap:8px}
+.check-row input{margin-top:3px}
+.check-row label{width:auto;flex:1;font-size:15px}
+.btn-group{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+button{flex:1;min-width:85px;padding:11px;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500}
+#calcBtn{background:#2563eb;color:#fff}
+#copyBtn{background:#059669;color:#fff}
+#clearBtn{background:#e5e7eb;color:#111}
+.result{margin-top:16px;padding:14px;background:#f8fafc;border-radius:8px;white-space:pre-wrap;font-size:13px;line-height:1.6;overflow-x:auto}
+.note{margin-top:14px;font-size:12px;color:#64748b;line-height:1.5}
+.tip{font-size:13px;color:#ef4444;margin-top:4px;min-height:20px}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>WB蛋白检测报价计算器</h2>
+
+<div class="row">
+<label>样本数量：</label>
+<input type="number" id="sampleNum" placeholder="样本总数">
+</div>
+<div class="row">
+<label>检测指标：</label>
+<input type="number" id="targetNum" placeholder="目的蛋白指标">
+</div>
+
+<div class="check-row">
+<input type="checkbox" id="useSameMem">
+<label for="useSameMem">内参+目的蛋白同膜（140元/指标/张膜，每膜最多14样本）</label>
+</div>
+
+<div class="btn-group">
+<button id="calcBtn">计算报价</button>
+<button id="copyBtn">复制报价</button>
+<button id="clearBtn">清空</button>
+</div>
+
+<div class="result" id="resBox">计算结果展示区</div>
+<div class="tip" id="tipBox"></div>
+
+<div class="note">
+【计算规则】
+• 单价：188元 /2孔/样
+• 档位 =向上取整(样本数÷2)
+• 膜张数 =向上取整(样本数÷14)，单膜最多14样本
+• 基础费用 =188 × 档位 × 指标数
+• 同膜费：140 × 指标 × 膜数（勾选生效）
+• 服务含抗体&内参，周期10‑14工作日
+• 不含运费；周期不含样本接收质检时间
+</div>
+</div>
+
+<script>
+const calcBtn = document.getElementById('calcBtn');
+const copyBtn = document.getElementById('copyBtn');
+const clearBtn = document.getElementById('clearBtn');
+const resBox = document.getElementById('resBox');
+const tipBox = document.getElementById('tipBox');
+let lastOutputText = "";
+
+function ceilDiv(a,b){
+    return Math.ceil(a / b);
+}
+
+calcBtn.onclick = function(){
+    const sampleNum = Number(document.getElementById('sampleNum').value);
+    const targetNum = Number(document.getElementById('targetNum').value);
+    const useSameMem = document.getElementById('useSameMem').checked;
+    tipBox.innerText = "";
+
+    if(!sampleNum || sampleNum <=0 || !targetNum || targetNum <=0){
+        resBox.innerText = "⚠️样本、检测指标必须输入大于0数字！";
+        lastOutputText = "";
+        return;
+    }
+
+    const holeGear = ceilDiv(sampleNum,2);
+    const memCount = ceilDiv(sampleNum,14);
+    const baseFee = 188 * holeGear * targetNum;
+    let memFee = useSameMem ? 140 * targetNum * memCount : 0;
+    const total = baseFee + memFee;
+
+    const sameMemDesc = useSameMem ? `内参+目的蛋白同膜，${memCount}张膜` : "不同膜，无同膜费用";
+    const memLine = useSameMem
+        ? `同膜费用：140 元 × ${targetNum} 指标 × ${memCount}张膜 = ${memFee} 元`
+        : `同膜费用：未开启同膜，0 元`;
+
+    lastOutputText = `===============================
+          WB蛋白检测报价单
+===============================
+样本数量：${sampleNum} 个
+检测指标：${targetNum} 个
+同膜方式：${sameMemDesc}
+───────────────────────────────
+                WB蛋白检测报价
+───────────────────────────────
+单价：188 元/2孔/样
+基础检测：188 × ${holeGear} × ${targetNum}指标 = ${baseFee} 元
+${memLine}
+合　　计：${total} 元
+服　　务：按趋势优化结果，含抗体&内参，周期10‑14工作日
+===============================`;
+
+    resBox.innerText = lastOutputText;
+    tipBox.innerText = `💡档位：${holeGear}；膜数：${memCount}张`;
+};
+
+copyBtn.onclick = async function(){
+    if(!lastOutputText){
+        tipBox.innerText = "⚠️请先点击计算报价";
+        return;
+    }
+    try{
+        await navigator.clipboard.writeText(lastOutputText);
+        tipBox.innerText = "✅已复制，可以直接粘贴发给客户";
+    }catch(e){
+        tipBox.innerText = "❌复制失败，请手动复制上方结果";
+    }
+};
+
+clearBtn.onclick = function(){
+    document.getElementById('sampleNum').value = '';
+    document.getElementById('targetNum').value = '';
+    document.getElementById('useSameMem').checked = false;
+    resBox.innerText = "计算结果展示区";
+    tipBox.innerText = "";
+    lastOutputText = "";
+};
+</script>
+</body>
+</html>
